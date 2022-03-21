@@ -6,16 +6,22 @@
 #
 #环境: CentOS8
 #
-#前提: 先准备好SSL的证书
+#前提: 先准备好SSL的证书及伪装的网站文件
 #
-#安装过程输入以下要素
+#输入 
+#1 证书文件名 
+#2 Trojan-Go的版本号 
+#3 伪装的网站的文件 
+#4 Trojan-Go的密码及域名
 #
-#SSL证书的文件名
-#Trojan-Go的版本号
-#Trojan-Go的安装路径
-#Trojan-Go的密码和域名
+#
+#自动安装Nginx, 并将侦听端口号改为8443。
+#新建 trojan 用户, 使用此用户启动trojan。
+#trojan-Go的默认开启CDN，并侦听443端口。
 #
 ##################################################
+
+TrojanGoPath="/home/trojan"
 
 toadduser()
 {
@@ -29,8 +35,25 @@ fi
 num=`cat /etc/passwd|grep trojan|wc -l`
 if [ $num -eq 0 ]
 then
-    useradd -d /home/trojan -m -G certuser trojan
+    useradd -d $TrojanGoPath -m -G certuser trojan
 fi
+}
+
+uninstall_nginx()
+{
+systemctl stop nginx
+firewall-cmd --permanent --zone=public --remove-service=http
+firewall-cmd --permanent --zone=public --remove-service=https
+firewall-cmd --reload
+
+systemctl disable nginx
+yum remove nginx -y
+}
+
+uninstall_trojango()
+{
+rm -rf $TrojanGoPath"/trojan-go"
+rm -rf trojan-go-linux-amd64.zip
 }
 
 install_trojango()
@@ -42,6 +65,7 @@ wget $address
 if [ ! -f trojan-go-linux-amd64.zip ]
 then 
 	echo "trojan-go-linux-amd64.zip is not exist"
+	uninstall_nginx
 	exit 1
 fi
 
@@ -101,11 +125,6 @@ unzip $Website -d /usr/share/nginx/html
 
 config_trojango()
 {
-echo -n "input trojan-go password:"
-read password
-echo -n "input domain:"
-read Domain
-
 echo "{
     \"run_type\": \"server\",
     \"local_addr\": \"0.0.0.0\",
@@ -203,20 +222,22 @@ then
 	exit 1
 fi
 
-echo -n "input certs directory:"
+echo -n "input certs install directory:"
 read CertDir
 
 #trojan-go版本号
 echo -n "input trojan-go version:"
 read version
 
-#trojan-go安装路径
-echo -n "input install trojan-go directory:"
-read TrojanGoPath
-
 #html
 echo -n "input website zip(include .zip):"
 read Website
+
+echo -n "input trojan-go password:"
+read password
+
+echo -n "input domain:"
+read Domain
 
 if [  ! -f $Website ]
 then
@@ -232,8 +253,15 @@ fi
 mkdir -p $CertDir
 cp $SSLCertFile $CertDir
 cp $SSLKeyFile $CertDir
-SSLCert=$CertDir"/"$SSLCertFile
-SSLKey=$CertDir"/"$SSLKeyFile
+if [ ${CertDir: 0-1: 1} == "/" ]
+then
+	SSLCert=$CertDir$SSLCertFile
+	SSLKey=$CertDir$SSLKeyFile
+else
+	SSLCert=$CertDir"/"$SSLCertFile
+	SSLKey=$CertDir"/"$SSLKeyFile
+fi 
+
 
 #安装nginx
 echo "install nginx......"
