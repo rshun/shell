@@ -22,6 +22,7 @@
 ##################################################
 
 TrojanGoPath="/home/trojan"
+CertDir="/etc/certs"
 
 toadduser()
 {
@@ -120,6 +121,7 @@ echo "        server {
 " >>/etc/nginx/nginx.conf
 setenforce 0
 systemctl restart nginx
+rm -rf /usr/share/nginx/html
 unzip $Website -d /usr/share/nginx/html
 }
 
@@ -222,9 +224,6 @@ then
 	exit 1
 fi
 
-echo -n "input certs install directory:"
-read CertDir
-
 #trojan-go版本号
 echo -n "input trojan-go version:"
 read version
@@ -243,11 +242,6 @@ if [  ! -f $Website ]
 then
 	echo $Website" is not exist..."
 	exit 1
-fi
-
-if [ $CertDir == "" ]
-then
-    CertDir="/etc/certs"
 fi
 
 mkdir -p $CertDir
