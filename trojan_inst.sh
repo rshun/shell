@@ -122,7 +122,7 @@ echo "        server {
 setenforce 0
 systemctl restart nginx
 rm -rf /usr/share/nginx/html
-unzip $Website -d /usr/share/nginx/html
+unzip $Website -d /usr/share/nginx
 }
 
 config_trojango()
