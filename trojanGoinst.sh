@@ -167,8 +167,8 @@ Documentation=https://p4gefau1t.github.io/trojan-go/
 After=network.target nss-lookup.target
 
 [Service]
-User="$TrojanGoUser
-"CapabilityBoundingSet=CAP_NET_ADMIN CAP_NET_BIND_SERVICE
+User="$TrojanGoUser"
+CapabilityBoundingSet=CAP_NET_ADMIN CAP_NET_BIND_SERVICE
 AmbientCapabilities=CAP_NET_ADMIN CAP_NET_BIND_SERVICE
 NoNewPrivileges=true
 ExecStart=/usr/bin/trojan-go -config "$TrojanGoPath"/server.json
