@@ -20,8 +20,8 @@
 #trojan-Go的默认开启CDN，并侦听443端口。
 #
 ##################################################
-
-TrojanGoPath="/home/trojanGo"
+TrojanGoUser="trojango"
+TrojanGoPath="/home/"$TrojanGoUser
 CertDir="/etc/certs"
 
 toadduser()
@@ -33,10 +33,10 @@ then
     groupadd certuser
 fi
 
-num=`cat /etc/passwd|grep trojango|wc -l`
+num=`cat /etc/passwd|grep "$TrojanGoUser"|wc -l`
 if [ $num -eq 0 ]
 then
-    useradd -d $TrojanGoPath -m -G certuser trojango
+    useradd -d $TrojanGoPath -m -G certuser $TrojanGoUser
 fi
 }
 
@@ -53,7 +53,7 @@ yum remove nginx -y
 
 uninstall_trojango()
 {
-rm -rf $TrojanGoPath"/trojan-go"
+rm -rf $TrojanGoPath
 rm -rf trojan-go-linux-amd64.zip
 }
 
@@ -167,8 +167,8 @@ Documentation=https://p4gefau1t.github.io/trojan-go/
 After=network.target nss-lookup.target
 
 [Service]
-User=trojan
-CapabilityBoundingSet=CAP_NET_ADMIN CAP_NET_BIND_SERVICE
+User="$TrojanGoUser
+"CapabilityBoundingSet=CAP_NET_ADMIN CAP_NET_BIND_SERVICE
 AmbientCapabilities=CAP_NET_ADMIN CAP_NET_BIND_SERVICE
 NoNewPrivileges=true
 ExecStart=/usr/bin/trojan-go -config "$TrojanGoPath"/server.json
@@ -185,8 +185,8 @@ cp $TrojanGoPath/trojan-go.service /etc/systemd/system
 #赋予trojan-go侦听1024以下的端口
 setcap 'CAP_NET_BIND_SERVICE=+eip' /usr/bin/trojan-go
 
-chown -R trojan:certuser $CertDir
-chown -R trojan:certuser $TrojanGoPath
+chown -R $TrojanGoUser:certuser $CertDir
+chown -R $TrojanGoUser:certuser $TrojanGoPath
 
 chmod -R 750 $CertDir
 
