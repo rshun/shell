@@ -14,7 +14,7 @@
 
 **自动安装Nginx，并将侦听端口号改为8443。**
 
-**新建 trojango 用户, 使用此用户启动 trojango,trojan-Go的默认开启CDN,并侦听443端口. **
+**新建 trojango 用户, 使用此用户启动 trojango,trojan-Go的默认开启CDN,并侦听443端口.**
 
 
 ## 一键安装Trojan脚本
