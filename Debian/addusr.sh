@@ -28,7 +28,7 @@ else
         echo "the group "$2" is not exist"
         exit 1
     fi
-    useradd -d /home/$1 -g $2 -s /bin/bash -m -U $1
+    useradd -d /home/$1 -g $2 -s /bin/bash -m $1
 fi
 chmod 700 /home/$1
 }
