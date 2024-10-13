@@ -22,11 +22,14 @@ sed -i "s/DB_PASSWORD=postgres/DB_PASSWORD=${password}/g" $ENV_FILENAME
 sed -i "s/UPLOAD_LOCATION=\.\/library/UPLOAD_LOCATION=\.\/upload/g" $ENV_FILENAME
 sed -i "s/DB_DATA_LOCATION=\.\/postgres/DB_DATA_LOCATION=\.\/data/g" $ENV_FILENAME
 
+echo "PUID="`id -u immich` >>.env
+echo "PGID="`id -g immich` >>.env
 }
 
 modify_yml()
 {
     sed -i 's/2283:/41669:/g' $YAML_FILENAME
+    sed -i '/container_name/a \    user: \${PUID}:\${PGID}' $YAML_FILENAME
 }
 
 create_dir()

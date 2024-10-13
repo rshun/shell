@@ -1,4 +1,4 @@
-#!/usr/bin/bash
+#!/bin/bash
 #############################################################################
 #
 # 1. create user and build home directory
