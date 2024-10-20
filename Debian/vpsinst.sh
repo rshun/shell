@@ -12,6 +12,10 @@ install()
 {
     apt update
     apt install build-essential man lsof curl wget ufw sqlite3 libsqlite3-dev python3-pip nginx -y
+    if [ $? -ne 0 ]
+    then
+        exit -1
+    fi
 }
 
 download()
@@ -35,6 +39,13 @@ git clone https://github.com/rshun/keyMaster.git
 chmod 777 /home/rshun/rshun.sh
 su - rshun -c "sh /home/rshun/rshun.sh"
 su - rshun -c "rm /home/rshun/rshun.sh"
+
+echo "
+alias l='ls -ltr'
+set -o vi
+export EDITOR=vi
+export PATH=$PATH:$HOME/bin:$HOME/shell
+" >> /home/rshun/.profile
 }
 
 enable_firewall()
@@ -47,17 +58,28 @@ enable_firewall()
 #main
 if [ $# -eq 1 ]
 then
-    port = $1
+    port=$1
 else
-    port = 39281
+    port=39281
 fi
+
+echo "
+alias l='ls -ltr'
+set -o vi
+export EDITOR=vi
+export PATH=$PATH:$HOME/shell
+" >>$HOME/.profile
 
 install
 download sshd.sh $port
 download instdocker.sh
 download addusr.sh rshun
-usermod -G docker rshun
+username=`cat /etc/passwd|grep rshun|wc -l`
+if [ $username -eq 1 ]
+then
+    usermod -G docker rshun
+    execute_user
+fi
 
-timedatectl set-timezone Asia/Shanghai
-execute_user
 enable_firewall
+timedatectl set-timezone Asia/Shanghai
