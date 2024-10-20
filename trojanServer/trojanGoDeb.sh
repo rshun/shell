@@ -2,22 +2,22 @@
 ##################################################
 #
 #
-# 功能: 一键安装Tronjan-go
+#功能: 一键安装Tronjan-go
 #
-# 环境: Debian 12
+#环境: Debian12
 #
-# 前提: 先准备好SSL的证书及伪装的网站文件
+#前提: 先准备好SSL的证书及伪装的网站文件
 #
-# 输入 
-# 1 证书文件名 
-# 2 Trojan-Go的版本号 
-# 3 伪装的网站的文件 
-# 4 Trojan-Go的密码及域名
+#输入 
+#1 证书文件名 
+#2 Trojan-Go的版本号 
+#3 伪装的网站的文件 
+#4 Trojan-Go的密码及域名
 #
 #
-# 自动安装Nginx, 并将侦听端口号改为8443。
-# 新建 trojan 用户, 使用此用户启动trojan。
-# trojan-Go的默认开启CDN，并侦听443端口。
+#自动安装Nginx, 并将侦听端口号改为8443。
+#新建 trojan 用户, 使用此用户启动trojan。
+#trojan-Go的默认开启CDN，并侦听443端口。
 #
 ##################################################
 TrojanGoUser="trojango"
@@ -36,19 +36,24 @@ fi
 num=`cat /etc/passwd|grep "$TrojanGoUser"|wc -l`
 if [ $num -eq 0 ]
 then
-    useradd -d $TrojanGoPath -m -G certuser $TrojanGoUser
+    useradd -d $TrojanGoPath -s /bin/bash -m -G certuser $TrojanGoUser
 fi
 }
 
-remove_nginx()
+uninstall_nginx()
 {
 systemctl stop nginx
-
+systemctl stop ufw
 systemctl disable nginx
-yum remove nginx -y
+systemctl disable ufw
+
+ufw deny 'Nginx Full'
+
+apt remove ufw -y
+apt remove nginx -y
 }
 
-remove_trojango()
+uninstall_trojango()
 {
 rm -rf $TrojanGoPath
 rm -rf trojan-go-linux-amd64.zip
@@ -56,128 +61,63 @@ rm -rf trojan-go-linux-amd64.zip
 
 install_trojango()
 {
-    apt install wget unzip -y
-    address="https://github.com/p4gefau1t/trojan-go/releases/download/v"$version"/trojan-go-linux-amd64.zip"
-    wget $address
+apt install unzip -y
+address="https://github.com/p4gefau1t/trojan-go/releases/download/v"$version"/trojan-go-linux-amd64.zip"
+wget $address
 
-    if [ ! -f trojan-go-linux-amd64.zip ]
-    then 
-        echo "trojan-go-linux-amd64.zip is not exist"
-        remove_nginx
-        exit 1
-    fi
+if [ ! -f trojan-go-linux-amd64.zip ]
+then 
+	echo "trojan-go-linux-amd64.zip is not exist"
+	uninstall_nginx
+	exit 1
+fi
 
-    unzip trojan-go-linux-amd64.zip -d $TrojanGoPath
+unzip trojan-go-linux-amd64.zip -d $TrojanGoPath
 }
 
 install_nginx()
 {
-    apt update
-    apt install nginx -y
-    systemctl start nginx
-    
-    ufw allow 'Nginx HTTP'
-    ufw allow 'Nginx HTTPS'
+apt install nginx -y
+apt install ufw -y
+
+systemctl enable nginx
+ufw allow 'Nginx Full'
+ufw reload
 }
 
 config_nginx()
 {
-cp /etc/nginx/nginx.conf /etc/nginx/nginx.conf.old
-echo "
-user www-data;
-worker_processes auto;
-pid /run/nginx.pid;
-error_log /var/log/nginx/error.log;
-include /etc/nginx/modules-enabled/*.conf;
+echo "        server {
+        listen       8443 ssl http2 default_server;
+        listen       [::]:8443 ssl http2 default_server;
+        server_name  $Domain;
+        root         /var/www/html;
 
-events {
-        worker_connections 768;
-        # multi_accept on;
-}
-
-http {
-
-        ##
-        # Basic Settings
-        ##
-
-        sendfile on;
-        tcp_nopush on;
-        types_hash_max_size 2048;
-        # server_tokens off;
-
-        # server_names_hash_bucket_size 64;
-        # server_name_in_redirect off;
-
-        include /etc/nginx/mime.types;
-        default_type application/octet-stream;
-
-        ##
-        # SSL Settings
-        ##
-
-        ssl_protocols TLSv1 TLSv1.1 TLSv1.2 TLSv1.3; # Dropping SSLv3, ref: POODLE
+        ssl_certificate \""$SSLCert"\";
+        ssl_certificate_key \""$SSLKey"\";
+        ssl_session_cache shared:SSL:1m;
+        ssl_session_timeout  10m;
         ssl_prefer_server_ciphers on;
 
-        ##
-        # Logging Settings
-        ##
+        # Load configuration files for the default server block.
+        include /etc/nginx/default.d/*.conf;
 
-        access_log /var/log/nginx/access.log;
+        location / {
+        }
 
-        ##
-        # Gzip Settings
-        ##
+        error_page 404 /404.html;
+            location = /40x.html {
+        }
 
-        gzip on;
-
-        # gzip_vary on;
-        # gzip_proxied any;
-        # gzip_comp_level 6;
-        # gzip_buffers 16 8k;
-        # gzip_http_version 1.1;
-        # gzip_types text/plain text/css application/json application/javascript text/xml application/xml application/xml+rss text/javascript;
-
-        ##
-        # Virtual Host Configs
-        ##
-
-        include /etc/nginx/conf.d/*.conf;
-        include /etc/nginx/sites-enabled/*;
-
-        server {
-            listen       8443 ssl http2 default_server;
-            listen       [::]:8443 ssl http2 default_server;
-            server_name  _;
-            root         /usr/share/nginx/html;
-
-            ssl_certificate \""$SSLCert"\";
-            ssl_certificate_key \""$SSLKey"\";
-            ssl_session_cache shared:SSL:1m;
-            ssl_session_timeout  10m;
-            # ssl_ciphers PROFILE=SYSTEM;
-            ssl_prefer_server_ciphers on;
-            ssl_protocols TLSv1 TLSv1.1 TLSv1.2;
-            # Load configuration files for the default server block.
-            include /etc/nginx/default.d/*.conf;
-
-            location / {
-            }
-
-            error_page 404 /404.html;
-                location = /40x.html {
-            }
-
-            error_page 500 502 503 504 /50x.html;
-                location = /50x.html {
-            }
+        error_page 500 502 503 504 /50x.html;
+            location = /50x.html {
+        }
     }
-}
-" >/etc/nginx/nginx.conf
-
-systemctl restart nginx
-rm -rf /usr/share/nginx/html
-unzip $Website -d /usr/share/nginx
+" >>"/etc/nginx/sites-available/"$Domain".conf"
+ln -s "/etc/nginx/sites-available/"$Domain".conf" "/etc/nginx/sites-enabled/"$Domain".conf"
+nginx -s reload
+rm -rf /var/www/html
+unzip $Website -d /var/www/html
 }
 
 config_trojango()
@@ -192,12 +132,12 @@ echo "{
         \""$password"\"
     ],
     \"ssl\": {
-        \"verify\": true,
-        \"verify_hostname\": true,
-        \"fallback_port\": 8443,
+		\"verify\": true,
+		\"verify_hostname\": true,
+		\"fallback_port\": 8443,
         \"cert\": \""$SSLCert"\",
         \"key\": \""$SSLKey"\",
-        \"sni\": \""$Domain"\"
+        \"sni\": \""x.$Domain"\"
     },
     \"router\": {
         \"enabled\": true,
@@ -210,7 +150,7 @@ echo "{
  \"websocket\": {
     \"enabled\": true,
     \"path\": \"/polarbear\",
-    \"host\": \""$Domain"\"
+    \"host\": \""x.$Domain"\"
   }
 }" >>$TrojanGoPath/server.json
 cp $TrojanGoPath/trojan-go /usr/bin
@@ -280,18 +220,19 @@ then
 fi
 
 #trojan-go版本号
-version=0.10.6
 #echo -n "input trojan-go version:"
 #read version
+version=0.10.6
 
 #html
-echo -n "input website zip(include .zip):"
-read Website
+#echo -n "input website zip(include .zip):"
+#read Website
+Website=html.zip
 
 echo -n "input trojan-go password:"
 read password
 
-echo -n "input domain:"
+echo -n "input domain(include suffix google.com):"
 read Domain
 
 if [  ! -f $Website ]
@@ -305,11 +246,11 @@ cp $SSLCertFile $CertDir
 cp $SSLKeyFile $CertDir
 if [ ${CertDir: 0-1: 1} == "/" ]
 then
-    SSLCert=$CertDir$SSLCertFile
-    SSLKey=$CertDir$SSLKeyFile
+	SSLCert=$CertDir$SSLCertFile
+	SSLKey=$CertDir$SSLKeyFile
 else
-    SSLCert=$CertDir"/"$SSLCertFile
-    SSLKey=$CertDir"/"$SSLKeyFile
+	SSLCert=$CertDir"/"$SSLCertFile
+	SSLKey=$CertDir"/"$SSLKeyFile
 fi 
 
 
@@ -329,4 +270,5 @@ config_trojango
 echo "net.core.default_qdisc=fq" >> /etc/sysctl.conf
 echo "net.ipv4.tcp_congestion_control=bbr" >> /etc/sysctl.conf
 sysctl -p
-echo "All is install finish."
+
+echo "All install is finish."
