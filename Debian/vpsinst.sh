@@ -20,7 +20,7 @@ install()
 
 download()
 {
-    wget -O $1 https://raw.githubusercontent.com/rshun/shell/master/Debian/$1 && chmod +x $1 && ./$1 $param1
+    wget -O $1 https://raw.githubusercontent.com/rshun/shell/master/Debian/$1 && chmod +x $1 && ./$1 $2
 }
 
 
@@ -29,11 +29,6 @@ execute_user()
 echo "
 cd /home/rshun
 mkdir -p backup bin csv data etc html lib shell src obj tmp src/stock src/keyMaster src/py src/tmp
-cd /home/rshun/src/stock
-git clone https://github.com/rshun/stock.git
-
-cd /home/rshun/src/keyMaster
-git clone https://github.com/rshun/keyMaster.git
 " >>/home/rshun/rshun.sh
 
 chmod 777 /home/rshun/rshun.sh
