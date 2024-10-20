@@ -20,7 +20,7 @@ install()
 
 download()
 {
-    wget -O $shellname https://raw.githubusercontent.com/rshun/shell/master/Debian/$shellname && chmod +x $shellname && ./$shellname $param1
+    wget -O $1 https://raw.githubusercontent.com/rshun/shell/master/Debian/$1 && chmod +x $1 && ./$1 $param1
 }
 
 
