@@ -47,6 +47,7 @@ enable_firewall()
 {
     ufw enable
     ufw allow 39281/tcp
+    ufw reload
 }
 
 #main
@@ -80,7 +81,5 @@ fi
 enable_firewall
 timedatectl set-timezone Asia/Shanghai
 echo "please execute follow commands after install finish."
-echo "ufw reload"
-echo "delete /etc/ssh/sshd_config allowrootlogin"
 echo "add user password"
 echo "modify root password"
