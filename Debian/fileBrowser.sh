@@ -36,6 +36,11 @@ fi
 
 downloadfile()
 {
+if [ ! -d /root/tmp ]
+then
+    mkdir /root/tmp
+fi
+
 cd /root/tmp
 address="https://github.com/filebrowser/filebrowser/releases/download/v"$FILEBROWSER_VERSION"/linux-amd64-filebrowser.tar.gz"
 wget $address
