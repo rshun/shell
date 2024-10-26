@@ -50,8 +50,7 @@ echo "services:
     volumes:
       - "$DOWNLOAD_PATH":/downloads
     environment:
-      - URL_PREFIX=/metube
-" >$ROOT_PATH/docker-compose.yml
+      - URL_PREFIX=/metube" >$ROOT_PATH/docker-compose.yml
 echo "      - UID="`id -u "$USER_NAME"` >>$ROOT_PATH/docker-compose.yml
 echo "      - GID="`id -g "$USER_NAME"` >>$ROOT_PATH/docker-compose.yml
 }
