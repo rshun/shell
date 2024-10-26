@@ -73,9 +73,9 @@ Description=File Browser
 After=network.target
 
 [Service]
-User="$USER_NAME
-"Group="$GROUP_NAME
-"ExecStart="$ROOT_PATH"/bin/filebrowser -c "$ROOT_PATH"/etc/filebrowser.json
+User="$USER_NAME"
+Group="$GROUP_NAME"
+ExecStart="$ROOT_PATH"/bin/filebrowser -c "$ROOT_PATH"/etc/filebrowser.json
 
 [Install]
 WantedBy=multi-user.target">/etc/systemd/system/filebrowser.service
