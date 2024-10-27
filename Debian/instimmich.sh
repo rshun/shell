@@ -35,7 +35,7 @@ then
     if [ ! -f addusr.sh ]
     then
         echo "addusr.sh is not exist"
-        fi
+        exit 1
     fi
 
     ./addusr.sh $USER_NAME $GROUP_NAME
@@ -106,10 +106,8 @@ download_conf
 create_dir
 modify_env
 modify_yml
-usermog -aG docker $USER_NAME
-echo "immich install is finish."
-echo "please start immich before check docker-compose.yml"
-echo "now execute step:"
+usermod  -aG docker $USER_NAME
+echo "immich install is finish.now execute step:"
 echo " 1. modify immich passowd. passwd immich"
 echo " 2. check "$ROOT_PATH"/docker-compose.yml"
 echo " 3. start it. docker compose up -d"
