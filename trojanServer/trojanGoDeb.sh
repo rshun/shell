@@ -15,7 +15,7 @@
 #4 Trojan-Go的密码及域名
 #
 #
-#自动安装Nginx, 并将侦听端口号改为8443。
+#自动安装Nginx
 #新建 trojan 用户, 使用此用户启动trojan。
 #trojan-Go的默认开启CDN，并侦听443端口。
 #
@@ -67,9 +67,9 @@ wget $address
 
 if [ ! -f trojan-go-linux-amd64.zip ]
 then 
-	echo "trojan-go-linux-amd64.zip is not exist"
-	uninstall_nginx
-	exit 1
+    echo "trojan-go-linux-amd64.zip is not exist"
+    uninstall_nginx
+    exit 1
 fi
 
 unzip trojan-go-linux-amd64.zip -d $TrojanGoPath
@@ -87,30 +87,47 @@ ufw reload
 
 config_nginx()
 {
-echo "        server {
-        listen       8443 ssl http2 default_server;
-        listen       [::]:8443 ssl http2 default_server;
-        server_name  $Domain;
-        root         /var/www/html;
+rm -rf /etc/nginx/sites-enabled/default
 
+echo "server {
+        listen 80 default_server;
+        listen [::]:80 default_server;
+        server_name  $Domain;
+
+        # SSL certificate configuration
         ssl_certificate \""$SSLCert"\";
         ssl_certificate_key \""$SSLKey"\";
         ssl_session_cache shared:SSL:1m;
         ssl_session_timeout  10m;
         ssl_prefer_server_ciphers on;
 
+        # SSL Protocols
+        ssl_protocols TLSv1.2 TLSv1.3;
+
+        # Root directory and default index file
+        root /var/www/html;
+        index index.html;
+
+        # Add some common security headers
+        add_header Strict-Transport-Security \"max-age=31536000; includeSubDomains\" always;
+        add_header X-Frame-Options DENY;
+        add_header X-Content-Type-Options nosniff;
+    
         # Load configuration files for the default server block.
         include /etc/nginx/default.d/*.conf;
 
         location / {
+            try_files $uri $uri/ =404;
         }
 
         error_page 404 /404.html;
             location = /40x.html {
+            internal;
         }
 
         error_page 500 502 503 504 /50x.html;
             location = /50x.html {
+            internal;
         }
     }
 " >>"/etc/nginx/sites-available/"$Domain".conf"
@@ -132,9 +149,9 @@ echo "{
         \""$password"\"
     ],
     \"ssl\": {
-		\"verify\": true,
-		\"verify_hostname\": true,
-		\"fallback_port\": 8443,
+        \"verify\": true,
+        \"verify_hostname\": true,
+        \"fallback_port\": 8443,
         \"cert\": \""$SSLCert"\",
         \"key\": \""$SSLKey"\",
         \"sni\": \""x.$Domain"\"
@@ -246,11 +263,11 @@ cp $SSLCertFile $CertDir
 cp $SSLKeyFile $CertDir
 if [ ${CertDir: 0-1: 1} == "/" ]
 then
-	SSLCert=$CertDir$SSLCertFile
-	SSLKey=$CertDir$SSLKeyFile
+    SSLCert=$CertDir$SSLCertFile
+    SSLKey=$CertDir$SSLKeyFile
 else
-	SSLCert=$CertDir"/"$SSLCertFile
-	SSLKey=$CertDir"/"$SSLKeyFile
+    SSLCert=$CertDir"/"$SSLCertFile
+    SSLKey=$CertDir"/"$SSLKeyFile
 fi 
 
 
