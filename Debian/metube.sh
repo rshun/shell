@@ -9,8 +9,8 @@
 USER_NAME=metube
 GROUP_NAME=app
 ROOT_PATH=/home/$USER_NAME
-DOWNLOAD_PATH=/home/filebrowser/downloads
-DOCKER_CONFIG=$DOWNLOAD_PATH/docker-compose.yml
+DOWNLOAD_PATH=/home/shared/downloads
+DOCKER_CONFIG=$ROOT_PATH/docker-compose.yml
 
 createUser()
 {
@@ -23,7 +23,6 @@ fi
 num=`cat /etc/passwd|grep "$USER_NAME"|wc -l`
 if [ $num -eq 0 ]
 then
-    cd /root/tmp
     if [ ! -f addusr.sh ]
     then
         wget https://raw.githubusercontent.com/rshun/shell/master/Debian/addusr.sh && chmod +x addusr.sh
@@ -79,10 +78,6 @@ then
 fi
 }
 
-if [ ! -d /root/tmp ]
-then
-    mkdir /root/tmp
-fi
 checkDocker
 createUser
 install

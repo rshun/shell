@@ -71,7 +71,7 @@ echo "{
   \"address\": \"127.0.0.1\",
   \"log\": \""$ROOT_PATH"/log/filebrowser.log\",
   \"database\": \""$ROOT_PATH"/etc/filebrowser.db\",
-  \"root\": \""$DOWNLOAD_PATH"
+  \"root\": \""$DOWNLOAD_PATH"\"
 }" >$ROOT_PATH/etc/filebrowser.json
 
 echo "[Unit]
