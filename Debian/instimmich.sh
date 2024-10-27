@@ -28,10 +28,14 @@ fi
 num=`cat /etc/passwd|grep "$USER_NAME"|wc -l`
 if [ $num -eq 0 ]
 then
-    cd /root/tmp
     if [ ! -f addusr.sh ]
     then
         wget https://raw.githubusercontent.com/rshun/shell/master/Debian/addusr.sh && chmod +x addusr.sh
+    fi
+    if [ ! -f addusr.sh ]
+    then
+        echo "addusr.sh is not exist"
+        fi
     fi
 
     ./addusr.sh $USER_NAME $GROUP_NAME
@@ -96,13 +100,16 @@ cp .env example.env
 cp docker-compose.yml docker-compose.yml.bak
 }
 
-if [ ! -d /root/tmp ]
-then
-    mkdir /root/tmp
-fi
+#main
 createUser
 download_conf
 create_dir
 modify_env
 modify_yml
 usermog -aG docker $USER_NAME
+echo "immich install is finish."
+echo "please start immich before check docker-compose.yml"
+echo "now execute step:"
+echo " 1. modify immich passowd. passwd immich"
+echo " 2. check "$ROOT_PATH"/docker-compose.yml"
+echo " 3. start it. docker compose up -d"

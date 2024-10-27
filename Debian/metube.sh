@@ -28,6 +28,12 @@ then
         wget https://raw.githubusercontent.com/rshun/shell/master/Debian/addusr.sh && chmod +x addusr.sh
     fi
 
+    if [ ! -f addusr.sh ]
+    then
+        echo "addusr.sh is not exist"
+        fi
+    fi
+
     ./addusr.sh $USER_NAME $GROUP_NAME
     usermod -L $USER_NAME
     rm addusr.sh
