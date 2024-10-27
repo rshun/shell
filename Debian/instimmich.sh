@@ -8,7 +8,6 @@
 # 
 # immich version: 1.117
 #############################################################################
-
 YAML_FILENAME=docker-compose.yml
 ENV_FILENAME=.env
 NEW_UPLOAD=upload
@@ -59,7 +58,7 @@ echo "PGID="`id -g immich` >>$ENV_FILENAME
 
 modify_yml()
 {
-    sed -i 's/2283:/41669:/g' $YAML_FILENAME
+    sed -i 's/2283:/127.0.0.1:41669:/g' $YAML_FILENAME
     sed -i '/container_name/a \    user: \${PUID}:\${PGID}' $YAML_FILENAME
 }
 

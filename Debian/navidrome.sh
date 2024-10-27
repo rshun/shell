@@ -6,11 +6,13 @@
 #
 # 
 #############################################################################
-USER_NAME=metube
+USER_NAME=navid
 GROUP_NAME=app
 ROOT_PATH=/home/$USER_NAME
-DOWNLOAD_PATH=/home/shared/downloads
 DOCKER_CONFIG=$ROOT_PATH/docker-compose.yml
+DATA_PATH=$ROOT_PATH/data
+CACHE_PATH=$ROOT_PATH/cache
+MUSIC_LIBRARY=/Music
 
 createUser()
 {
@@ -31,7 +33,7 @@ then
     if [ ! -f addusr.sh ]
     then
         echo "addusr.sh is not exist"
-        exit -1
+        fi
     fi
 
     ./addusr.sh $USER_NAME $GROUP_NAME
@@ -42,24 +44,28 @@ fi
 
 install()
 {
-if [ -f $DOCKER_CONFIG ]
-then
-    cp $DOCKER_CONFIG $DOCKER_CONFIG.bak
-fi
-
 echo "services:
-  metube:
-    image: ghcr.io/alexta69/metube
-    container_name: metube
-    restart: unless-stopped
+  navidrome:
+    image: deluan/navidrome:latest
+    user: `id -u "$USER_NAME"`:`id -g "$USER_NAME"` # should be owner of volumes
     ports:
-      - \"8081:8081\"
-    volumes:
-      - "$DOWNLOAD_PATH":/downloads
+      - \"127.0.0.1:4533:4533\"
+    restart: unless-stopped
     environment:
-      - URL_PREFIX=/metube" >$DOCKER_CONFIG
-echo "      - UID="`id -u "$USER_NAME"` >>$DOCKER_CONFIG
-echo "      - GID="`id -g "$USER_NAME"` >>$DOCKER_CONFIG
+      ND_BASEURL: \"/navid\"
+      ND_DEFAULTLANGUAGE: \"zh-Hans\"
+      ND_DEFAULTTHEME: \"Auto\"
+      ND_LOGLEVEL=info
+      ND_SCANSCHEDULE: 1h
+      ND_SESSIONTIMEOUT: 24h
+    volumes:
+      - \"$DATA_PATH:/data\"
+      - \"$CACHE_PATH:/cache\"
+      - \"$MUSIC_LIBRARY:/music:ro\"
+" >$DOCKER_CONFIG
+
+mkdir -p $DATA_PATH
+mkdir -p $CACHE_PATH
 }
 
 config()
@@ -68,27 +74,9 @@ chown -R $USER_NAME:$GROUP_NAME $ROOT_PATH
 usermod -aG docker $USER_NAME
 }
 
-checkDocker()
-{
-result=`docker version`
-if [ $? -ne 0 ]
-then
-    echo "please install docker first"
-    exit 1
-fi
-
-if [ ! -d $DOWNLOAD_PATH ]
-then
-    echo $DOWNLOAD_PATH" is not exist"
-    exit 1
-fi
-}
-
-checkDocker
 createUser
 install
 config
-
 echo "the config file is finish. "
 echo "execute passwd" $USER_NAME" modify password"
 echo "then execute docker compose up -d"

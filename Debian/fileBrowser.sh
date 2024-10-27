@@ -33,7 +33,7 @@ then
     if [ ! -f addusr.sh ]
     then
         echo "addusr.sh is not exist"
-        fi
+        exit -1
     fi
 
     ./addusr.sh $USER_NAME $GROUP_NAME
