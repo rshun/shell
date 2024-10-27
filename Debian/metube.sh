@@ -10,6 +10,7 @@ USER_NAME=metube
 GROUP_NAME=app
 ROOT_PATH=/home/$USER_NAME
 DOWNLOAD_PATH=/home/filebrowser/downloads
+DOCKER_CONFIG=$DOWNLOAD_PATH/docker-compose.yml
 
 createUser()
 {
@@ -29,15 +30,16 @@ then
     fi
 
     ./addusr.sh $USER_NAME $GROUP_NAME
+    usermod -L $USER_NAME
     rm addusr.sh
 fi
 }
 
 install()
 {
-if [ -f $ROOT_PATH/docker-compose.yml ]
+if [ -f $DOCKER_CONFIG ]
 then
-    cp $ROOT_PATH/docker-compose.yml $ROOT_PATH/docker-compose.yml.bak
+    cp $DOCKER_CONFIG $DOCKER_CONFIG.bak
 fi
 
 echo "services:
@@ -50,9 +52,9 @@ echo "services:
     volumes:
       - "$DOWNLOAD_PATH":/downloads
     environment:
-      - URL_PREFIX=/metube" >$ROOT_PATH/docker-compose.yml
-echo "      - UID="`id -u "$USER_NAME"` >>$ROOT_PATH/docker-compose.yml
-echo "      - GID="`id -g "$USER_NAME"` >>$ROOT_PATH/docker-compose.yml
+      - URL_PREFIX=/metube" >$DOCKER_CONFIG
+echo "      - UID="`id -u "$USER_NAME"` >>$DOCKER_CONFIG
+echo "      - GID="`id -g "$USER_NAME"` >>$DOCKER_CONFIG
 }
 
 config()
@@ -77,6 +79,10 @@ then
 fi
 }
 
+if [ ! -d /root/tmp ]
+then
+    mkdir /root/tmp
+fi
 checkDocker
 createUser
 install

@@ -1,4 +1,5 @@
-######################################################################################################################
+#!/bin/bash
+########################################################
 #
 # 1. install docker,sqlite3,apps and create user
 # 2. initial user directory
@@ -6,8 +7,7 @@
 #
 #
 #
-######################################################################################################################
-
+########################################################
 install()
 {
     apt update
@@ -26,6 +26,12 @@ download()
 
 execute_user()
 {
+username=`cat /etc/passwd|grep rshun|wc -l`
+if [ $username -eq 1 ]
+then
+    usermod -G docker rshun
+fi
+
 echo "
 cd /home/rshun
 mkdir -p backup bin csv data etc html lib shell src obj tmp src/stock src/keyMaster src/py src/tmp
@@ -71,12 +77,7 @@ install
 download sshd.sh $port
 download instdocker.sh
 download addusr.sh rshun
-username=`cat /etc/passwd|grep rshun|wc -l`
-if [ $username -eq 1 ]
-then
-    usermod -G docker rshun
-    execute_user
-fi
+execute_user
 
 enable_firewall
 timedatectl set-timezone Asia/Shanghai

@@ -13,17 +13,44 @@ YAML_FILENAME=docker-compose.yml
 ENV_FILENAME=.env
 NEW_UPLOAD=upload
 NEW_DATABASE_LOCATION=data
+USER_NAME=immich
+GROUP_NAME=app
+ROOT_PATH=/home/$USER_NAME
+
+createUser()
+{
+appgroup=`cat /etc/group|grep $GROUP_NAME|wc -l`
+if [ $appgroup -eq 0 ]
+then
+    groupadd $GROUP_NAME
+fi
+
+num=`cat /etc/passwd|grep "$USER_NAME"|wc -l`
+if [ $num -eq 0 ]
+then
+    cd /root/tmp
+    if [ ! -f addusr.sh ]
+    then
+        wget https://raw.githubusercontent.com/rshun/shell/master/Debian/addusr.sh && chmod +x addusr.sh
+    fi
+
+    ./addusr.sh $USER_NAME $GROUP_NAME
+    usermod -L $USER_NAME
+    rm addusr.sh
+fi
+}
 
 modify_env()
 {
+cd $ROOT_PATH
 
 password=`openssl rand -hex 16`
 sed -i "s/DB_PASSWORD=postgres/DB_PASSWORD=${password}/g" $ENV_FILENAME
 sed -i "s/UPLOAD_LOCATION=\.\/library/UPLOAD_LOCATION=\.\/upload/g" $ENV_FILENAME
 sed -i "s/DB_DATA_LOCATION=\.\/postgres/DB_DATA_LOCATION=\.\/data/g" $ENV_FILENAME
 
-echo "PUID="`id -u immich` >>.env
-echo "PGID="`id -g immich` >>.env
+echo "PUID="`id -u immich` >>$ENV_FILENAME
+echo "PGID="`id -g immich` >>$ENV_FILENAME
 }
 
 modify_yml()
@@ -34,6 +61,7 @@ modify_yml()
 
 create_dir()
 {
+cd $ROOT_PATH
 
 if [ ! -d $NEW_DATABASE_LOCATION ]
 then
@@ -48,7 +76,7 @@ fi
 
 download_conf()
 {
-
+cd $ROOT_PATH
 wget -O docker-compose.yml https://github.com/immich-app/immich/releases/latest/download/docker-compose.yml
 wget -O .env https://github.com/immich-app/immich/releases/latest/download/example.env
 
@@ -68,7 +96,13 @@ cp .env example.env
 cp docker-compose.yml docker-compose.yml.bak
 }
 
+if [ ! -d /root/tmp ]
+then
+    mkdir /root/tmp
+fi
+createUser
 download_conf
 create_dir
 modify_env
 modify_yml
+usermog -aG docker $USER_NAME

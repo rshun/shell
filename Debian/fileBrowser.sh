@@ -1,15 +1,17 @@
 #!/bin/bash
 #############################################################################
 #
-# 1. 
-# 2.
-#
+# 1. create user filebrowser
+# 2. download filebrowser
+# 3. add filebrowser to system service
 # 
 #############################################################################
 FILEBROWSER_VERSION=2.31.2
 USER_NAME=filebrowser
 GROUP_NAME=app
 ROOT_PATH=/home/$USER_NAME
+TEMP_PATH=$ROOT_PATH/tmp
+DOWNLOAD_PATH=/home/shared/downloads
 
 #create filebrowser and app group
 createUser()
@@ -23,25 +25,21 @@ fi
 num=`cat /etc/passwd|grep "$USER_NAME"|wc -l`
 if [ $num -eq 0 ]
 then
-    cd /root/tmp
+    cd $TEMP_PATH
     if [ ! -f addusr.sh ]
     then
         wget https://raw.githubusercontent.com/rshun/shell/master/Debian/addusr.sh && chmod +x addusr.sh
     fi
 
     ./addusr.sh $USER_NAME $GROUP_NAME
+    usermod -L $USER_NAME
     rm addusr.sh
 fi
 }
 
 downloadfile()
 {
-if [ ! -d /root/tmp ]
-then
-    mkdir /root/tmp
-fi
-
-cd /root/tmp
+cd $TEMP_PATH
 address="https://github.com/filebrowser/filebrowser/releases/download/v"$FILEBROWSER_VERSION"/linux-amd64-filebrowser.tar.gz"
 wget $address
 
@@ -51,21 +49,25 @@ then
     exit 1
 fi
 
-tar zxvf linux-amd64-filebrowser.tar.gz filebrowser
+tar zxvf linux-amd64-filebrowser.tar.gz $ROOT_PATH/bin/filebrowser
+chmod +x $ROOT_PATH/bin/filebrowser
 }
 
 config()
 {
 cd $ROOT_PATH
 
-mkdir bin downloads etc log
+mkdir -p $DOWNLOAD_PATH
+chmod 777 $DOWNLOAD_PATH
+
+mkdir bin etc log tmp
 echo "{
   \"port\": 38612,
   \"baseURL\": \"/dofiles\",
   \"address\": \"127.0.0.1\",
   \"log\": \""$ROOT_PATH"/log/filebrowser.log\",
   \"database\": \""$ROOT_PATH"/etc/filebrowser.db\",
-  \"root\": \""$ROOT_PATH"/downloads\"
+  \"root\": \""$DOWNLOAD_PATH"
 }" >$ROOT_PATH/etc/filebrowser.json
 
 echo "[Unit]
@@ -80,18 +82,19 @@ ExecStart="$ROOT_PATH"/bin/filebrowser -c "$ROOT_PATH"/etc/filebrowser.json
 [Install]
 WantedBy=multi-user.target">/etc/systemd/system/filebrowser.service
 
-mv /root/tmp/filebrowser $ROOT_PATH/bin
-
-chmod 750 $ROOT_PATH
-chmod 777 $ROOT_PATH/downloads
-chmod +x $ROOT_PATH/bin/filebrowser
-chown -R $USER_NAME:$GROUP_NAME $ROOT_PATH
-
 }
 
+if [ $# -eq 1 ]
+then
+    FILEBROWSER_VERSION=$1
+fi
+
 createUser
-downloadfile
 config
+downloadfile
+
+chown -R $USER_NAME:$GROUP_NAME $ROOT_PATH
+
 systemctl daemon-reload
 systemctl enable filebrowser.service
 systemctl start filebrowser.service
