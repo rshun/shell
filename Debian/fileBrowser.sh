@@ -25,7 +25,6 @@ fi
 num=`cat /etc/passwd|grep "$USER_NAME"|wc -l`
 if [ $num -eq 0 ]
 then
-    cd $TEMP_PATH
     if [ ! -f addusr.sh ]
     then
         wget https://raw.githubusercontent.com/rshun/shell/master/Debian/addusr.sh && chmod +x addusr.sh
@@ -49,7 +48,12 @@ then
     exit 1
 fi
 
-tar zxvf linux-amd64-filebrowser.tar.gz $ROOT_PATH/bin/filebrowser
+tar zxvf linux-amd64-filebrowser.tar.gz -C $ROOT_PATH/bin filebrowser
+if [ ! -f $ROOT_PATH/bin/filebrowser ]
+then
+    echo $ROOT_PATH"/bin/filebrowser is not exist."
+    exit 1
+fi
 chmod +x $ROOT_PATH/bin/filebrowser
 }
 
