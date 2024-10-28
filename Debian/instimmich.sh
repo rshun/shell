@@ -13,7 +13,7 @@ ENV_FILENAME=.env
 NEW_UPLOAD=upload
 NEW_DATABASE_LOCATION=data
 USER_NAME=immich
-GROUP_NAME=app
+GROUP_NAME=apps
 ROOT_PATH=/home/$USER_NAME
 
 createUser()
@@ -52,13 +52,13 @@ sed -i "s/DB_PASSWORD=postgres/DB_PASSWORD=${password}/g" $ENV_FILENAME
 sed -i "s/UPLOAD_LOCATION=\.\/library/UPLOAD_LOCATION=\.\/upload/g" $ENV_FILENAME
 sed -i "s/DB_DATA_LOCATION=\.\/postgres/DB_DATA_LOCATION=\.\/data/g" $ENV_FILENAME
 
-echo "PUID="`id -u immich` >>$ENV_FILENAME
-echo "PGID="`id -g immich` >>$ENV_FILENAME
+echo "PUID="`id -u "$USER_NAME"` >>$ENV_FILENAME
+echo "PGID="`id -g "$USER_NAME"` >>$ENV_FILENAME
 }
 
 modify_yml()
 {
-    sed -i 's/2283:/127.0.0.1:41669:/g' $YAML_FILENAME
+    sed -i 's/2283:/127.0.0.1:2283:/g' $YAML_FILENAME
     sed -i '/container_name/a \    user: \${PUID}:\${PGID}' $YAML_FILENAME
 }
 

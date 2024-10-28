@@ -7,7 +7,7 @@
 # 
 #############################################################################
 USER_NAME=metube
-GROUP_NAME=app
+GROUP_NAME=apps
 ROOT_PATH=/home/$USER_NAME
 DOWNLOAD_PATH=/home/shared/downloads
 DOCKER_CONFIG=$ROOT_PATH/docker-compose.yml

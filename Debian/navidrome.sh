@@ -7,7 +7,7 @@
 # 
 #############################################################################
 USER_NAME=navid
-GROUP_NAME=app
+GROUP_NAME=apps
 ROOT_PATH=/home/$USER_NAME
 DOCKER_CONFIG=$ROOT_PATH/docker-compose.yml
 DATA_PATH=$ROOT_PATH/data

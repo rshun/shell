@@ -34,7 +34,13 @@ fi
 
 echo "
 cd /home/rshun
-mkdir -p backup bin csv data etc html lib shell src obj tmp src/stock src/keyMaster src/py src/tmp
+mkdir -p backup bin csv data etc html lib shell src obj tmp src/py src/tmp
+cd /home/rshun
+git clone git@github.com:rshun/shuncs.git
+git clone git@github.com:rshun/stock.git
+git clone git@github.com:rshun/keyMaster.git
+git clone git@github.com:rshun/rules.git
+
 " >>/home/rshun/rshun.sh
 
 chmod 777 /home/rshun/rshun.sh

@@ -8,7 +8,7 @@
 #############################################################################
 FILEBROWSER_VERSION=2.31.2
 USER_NAME=filebrowser
-GROUP_NAME=app
+GROUP_NAME=apps
 ROOT_PATH=/home/$USER_NAME
 TEMP_PATH=$ROOT_PATH/tmp
 DOWNLOAD_PATH=/home/shared/downloads
