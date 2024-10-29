@@ -38,7 +38,6 @@ then
     fi
 
     ./addusr.sh $USER_NAME $GROUP_NAME
-    usermod -L $USER_NAME
     rm addusr.sh
 fi
 }
@@ -49,6 +48,7 @@ cd $ROOT_PATH
 
 password=`openssl rand -hex 16`
 sed -i "s/DB_PASSWORD=postgres/DB_PASSWORD=${password}/g" $ENV_FILENAME
+sed -i "s/\# TZ=Etc\/UTC/TZ=Asia\/Shanghai/g" $ENV_FILENAME
 sed -i "s/UPLOAD_LOCATION=\.\/library/UPLOAD_LOCATION=\.\/upload/g" $ENV_FILENAME
 sed -i "s/DB_DATA_LOCATION=\.\/postgres/DB_DATA_LOCATION=\.\/data/g" $ENV_FILENAME
 
@@ -99,14 +99,22 @@ cp .env example.env
 cp docker-compose.yml docker-compose.yml.bak
 }
 
+change_privilege()
+{
+usermod -L $USER_NAME
+usermod  -aG docker $USER_NAME
+chown -R $USER_NAME:$GROUP_NAME $ROOT_PATH
+}
+
 #main
 createUser
 download_conf
 create_dir
 modify_env
 modify_yml
-usermod  -aG docker $USER_NAME
-echo "immich install is finish.now execute step:"
+change_privilege
+
+echo "immich install is finish. now execute step:"
 echo " 1. modify immich passowd. passwd immich"
 echo " 2. check "$ROOT_PATH"/docker-compose.yml"
 echo " 3. start it. docker compose up -d"

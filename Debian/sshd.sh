@@ -7,6 +7,7 @@ echo "PubkeyAcceptedKeyTypes +ssh-rsa"  >>$config_file
 echo "KexAlgorithms curve25519-sha256@libssh.org,ecdh-sha2-nistp256,ecdh-sha2-nistp384,ecdh-sha2-nistp521,diffie-hellman-group14-sha1" >>$config_file
 
 sed -i -e '/^#PermitRootLogin/s/^#//' -e '/^PermitRootLogin/s/yes/no/' "$config_file"
+sed -i 's/^#PasswordAuthentication/PasswordAuthentication/g' "$config_file"
 
 if [ $# -eq 0 ]
 then

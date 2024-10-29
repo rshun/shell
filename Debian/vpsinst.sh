@@ -1,6 +1,10 @@
 #!/bin/bash
 ########################################################
 #
+# 1. 安装常用软件
+# 2. 找到备份文件，根据备份文件前面的用户名创建用户，并将数据解压至该目录下,cron要处理
+# 3. 安装docker
+# 4. 修改sshd，打开防火墙
 # 1. install docker,sqlite3,apps and create user
 # 2. initial user directory
 # 3. enable firewall and open 
