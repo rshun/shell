@@ -33,7 +33,7 @@ then
     if [ ! -f addusr.sh ]
     then
         echo "addusr.sh is not exist"
-        fi
+        exit -1
     fi
 
     ./addusr.sh $USER_NAME $GROUP_NAME
@@ -52,10 +52,10 @@ echo "services:
       - \"127.0.0.1:4533:4533\"
     restart: unless-stopped
     environment:
-      ND_BASEURL: \"/navid\"
+      ND_BASEURL: \"/music\"
       ND_DEFAULTLANGUAGE: \"zh-Hans\"
       ND_DEFAULTTHEME: \"Auto\"
-      ND_LOGLEVEL=info
+      ND_LOGLEVEL: info
       ND_SCANSCHEDULE: 1h
       ND_SESSIONTIMEOUT: 24h
     volumes:
@@ -73,6 +73,12 @@ config()
 chown -R $USER_NAME:$GROUP_NAME $ROOT_PATH
 usermod -aG docker $USER_NAME
 }
+
+#main
+if [ ! -d $MUSIC_LIBRARY ]
+then
+    mkdir -p $MUSIC_LIBRARY
+fi
 
 createUser
 install
