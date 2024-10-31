@@ -48,15 +48,15 @@ echo "services:
     image: linuxserver/calibre-web:latest
     container_name: calibre-web
     environment:
-      - PUID=1000
-      - PGID=1000
+      - PUID=`id -u "$USER_NAME"`
+      - PGID=`id -g "$USER_NAME"`
       - TZ=Asia/Shanghai
     volumes:
       - ./config:/config
       - /Books:/library
+      - DOCKER_MODS=linuxserver/mods:universal-calibre
     ports:
-      - 8083:8083
-      - 8080:8080
+      - 127.0.0.1:8083:8083
     restart: unless-stopped
 " >$DOCKER_CONFIG
 
@@ -65,6 +65,8 @@ mkdir -p $CONFIG_PATH
 
 config()
 {
+wget -P $CONFIG_PATH https://github.com/janeczku/calibre-web/raw/master/library/metadata.db
+
 chown -R $USER_NAME:$GROUP_NAME $ROOT_PATH
 usermod -aG docker $USER_NAME
 }
