@@ -6,11 +6,13 @@
 #
 # 
 #############################################################################
-USER_NAME=calib
+USER_NAME=dockge
 GROUP_NAME=apps
 ROOT_PATH=/home/$USER_NAME
-DOCKER_CONFIG=$ROOT_PATH/docker-compose.yml
-CONFIG_PATH=$ROOT_PATH/config
+DATA_PATH=$ROOT_PATH/data
+STACKS_PATH=$ROOT_PATH/stacks
+DOCKGE_PATH=$ROOT_PATH/dockge
+DOCKER_CONFIG=$DOCKGE_PATH/docker-compose.yml
 
 createUser()
 {
@@ -43,39 +45,39 @@ fi
 install()
 {
 echo "services:
-  calibre-web:
-    image: linuxserver/calibre-web:latest
-    container_name: calibre-web
-    environment:
-      - PUID=`id -u "$USER_NAME"`
-      - PGID=`id -g "$USER_NAME"`
-      - TZ=Asia/Shanghai
-    volumes:
-      - ./config:/config
-      - /Books:/library
-      - DOCKER_MODS=linuxserver/mods:universal-calibre
-    ports:
-      - 127.0.0.1:8083:8083
+  dockge:
+    image: louislam/dockge:1
+    user: `id -u "$USER_NAME"`:`id -g "$USER_NAME"`
     restart: unless-stopped
+    ports:
+      - 127.0.0.1:27881:5001
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+      - "$DATA_PATH":/app/data
+      # Stacks Directory
+      # ⚠️ READ IT CAREFULLY. If you did it wrong, your data could end up writing into a WRONG PATH.
+      # ⚠️ 1. FULL path only. No relative path (MUST)
+      # ⚠️ 2. Left Stacks Path === Right Stacks Path (MUST)
+      - "$STACKS_PATH":/home/dockge/stacks
+    environment:
+      # Tell Dockge where to find the stacks
+      - DOCKGE_STACKS_DIR="$STACKS_PATH"
 " >$DOCKER_CONFIG
 
-mkdir -p $CONFIG_PATH
+mkdir -p $DATA_PATH
+mkdir -p $STACKS_PATH
+mkdir -p $DOCKGE_PATH
 }
 
 config()
 {
-wget -P $CONFIG_PATH https://github.com/janeczku/calibre-web/raw/master/library/metadata.db
-
-chown -R $USER_NAME:$GROUP_NAME $ROOT_PATH
 usermod -aG docker $USER_NAME
+chown -R $USER_NAME:$GROUP_NAME $ROOT_PATH
+chmod 750 $ROOT_PATH
+chmod 775 $STACKS_PATH
 }
 
 #main
-# if [ ! -d $BOOK_LIBRARY ]
-# then
-    # mkdir -p $BOOK_LIBRARY
-# fi
-
 createUser
 install
 config
