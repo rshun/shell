@@ -11,6 +11,8 @@ GROUP_NAME=apps
 ROOT_PATH=/home/$USER_NAME
 DOCKER_CONFIG=$ROOT_PATH/docker-compose.yml
 CONFIG_PATH=$ROOT_PATH/config
+TEMP_PATH=$ROOT_PATH/tmp
+BOOKS_PATH=$ROOT_PATH/books
 
 createUser()
 {
@@ -42,40 +44,35 @@ fi
 
 install()
 {
+mkdir -p $CONFIG_PATH $TEMP_PATH $BOOKS_PATH
 echo "services:
-  calibre-web:
-    image: linuxserver/calibre-web:latest
-    container_name: calibre-web
+  calibre-web-automated:
+    image: crocodilestick/calibre-web-automated:latest
+    container_name: calibre-web-automated
     environment:
       - PUID=`id -u "$USER_NAME"`
       - PGID=`id -g "$USER_NAME"`
       - TZ=Asia/Shanghai
+      - DOCKER_MODS=lscr.io/linuxserver/mods:universal-calibre-v7.16.0
     volumes:
-      - ./config:/config
-      - /Books:/library
-      - DOCKER_MODS=linuxserver/mods:universal-calibre
+      - "$CONFIG_PATH":/config
+      - "$TEMP_PATH":/cwa-book-ingest
+      - "$BOOKS_PATH":/calibre-library
+      #- /path/to/your/gmail/credentials.json:/app/calibre-web/gmail.json #Optional
     ports:
-      - 127.0.0.1:8083:8083
-    restart: unless-stopped
-" >$DOCKER_CONFIG
-
-mkdir -p $CONFIG_PATH
+      - 127.0.0.1:8084:8083 # Change the first number to change the port you want to access the Web UI, not the second
+    restart: unless-stopped">$DOCKER_CONFIG
 }
 
 config()
 {
-wget -P $CONFIG_PATH https://github.com/janeczku/calibre-web/raw/master/library/metadata.db
+#wget -P $CONFIG_PATH https://github.com/janeczku/calibre-web/raw/master/library/metadata.db
 
 chown -R $USER_NAME:$GROUP_NAME $ROOT_PATH
 usermod -aG docker $USER_NAME
 }
 
 #main
-# if [ ! -d $BOOK_LIBRARY ]
-# then
-    # mkdir -p $BOOK_LIBRARY
-# fi
-
 createUser
 install
 config
