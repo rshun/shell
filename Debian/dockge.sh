@@ -46,7 +46,7 @@ install()
 echo "services:
   dockge:
     image: louislam/dockge:1
-    user: `id -u "$USER_NAME"`:`id -g "$USER_NAME"|awk '{print "$2"}'`
+    user: `id -u "$USER_NAME"`:`id -G "$USER_NAME"|awk '{print $2}'`
     restart: unless-stopped
     ports:
       - 127.0.0.1:27881:5001

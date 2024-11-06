@@ -19,6 +19,9 @@ CACHE_PATH=$ROOT_PATH/cache
 #self path
 MOVIES_PATH=/Movie
 
+#dockge path
+DOCKGE_STACK=/opt/stacks
+
 createUser()
 {
 appgroup=`cat /etc/group|grep $GROUP_NAME|wc -l`
@@ -83,9 +86,18 @@ chown -R $USER_NAME:$GROUP_NAME $ROOT_PATH
 usermod -aG docker $USER_NAME
 }
 
+dockge()
+{
+mkdir -p $DOCKGE_STACK/$USER_NAME
+mv $DOCKER_CONFIG $DOCKGE_STACK/$USER_NAME
+chown -R $USER_NAME:$GROUP_NAME $DOCKGE_STACK/$USER_NAME
+chmod -R 775 $DOCKGE_STACK/$USER_NAME
+}
+
 #main
 createUser
 install
 config
+dockge
 echo "the config file is finish. "
 echo "execute docker compose up -d use "$USER_NAME

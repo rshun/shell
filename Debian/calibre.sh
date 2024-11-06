@@ -13,6 +13,7 @@ DOCKER_CONFIG=$ROOT_PATH/docker-compose.yml
 CONFIG_PATH=$ROOT_PATH/config
 TEMP_PATH=$ROOT_PATH/tmp
 BOOKS_PATH=$ROOT_PATH/books
+DOCKGE_STACK=/opt/stacks
 
 createUser()
 {
@@ -72,10 +73,19 @@ chown -R $USER_NAME:$GROUP_NAME $ROOT_PATH
 usermod -aG docker $USER_NAME
 }
 
+dockge()
+{
+mkdir -p $DOCKGE_STACK/$USER_NAME
+mv $DOCKER_CONFIG $DOCKGE_STACK/$USER_NAME
+chown -R $USER_NAME:$GROUP_NAME $DOCKGE_STACK/$USER_NAME
+chmod -R 775 $DOCKGE_STACK/$USER_NAME
+}
+
 #main
 createUser
 install
 config
+dockge
 echo "the config file is finish. "
 echo "execute passwd" $USER_NAME" modify password"
 echo "then execute docker compose up -d"
