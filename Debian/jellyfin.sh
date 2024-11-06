@@ -6,12 +6,18 @@
 #
 # 
 #############################################################################
-USER_NAME=dockge
+#system config
+USER_NAME=jelly
 GROUP_NAME=apps
 ROOT_PATH=/home/$USER_NAME
-DATA_PATH=$ROOT_PATH/data
-STACKS_PATH=/opt/stacks
 DOCKER_CONFIG=$ROOT_PATH/docker-compose.yml
+
+#app config
+CONFIG_PATH=$ROOT_PATH/config
+CACHE_PATH=$ROOT_PATH/cache
+
+#self path
+MOVIES_PATH=/Movie
 
 createUser()
 {
@@ -43,34 +49,38 @@ fi
 
 install()
 {
+mkdir -p $CONFIG_PATH $CACHE_PATH
 echo "services:
-  dockge:
-    image: louislam/dockge:1
+  jellyfin:
+    image: jellyfin/jellyfin
+    container_name: jellyfin
     user: `id -u "$USER_NAME"`:`id -g "$USER_NAME"`
-    restart: unless-stopped
-    ports:
-      - 127.0.0.1:27881:5001
+    network_mode: 'host'
     volumes:
-      - /var/run/docker.sock:/var/run/docker.sock
-      - "$DATA_PATH":/app/data
-      # Stacks Directory
-      # ⚠️ READ IT CAREFULLY. If you did it wrong, your data could end up writing into a WRONG PATH.
-      # ⚠️ 1. FULL path only. No relative path (MUST)
-      # ⚠️ 2. Left Stacks Path === Right Stacks Path (MUST)
-      - "$STACKS_PATH":"$STACKS_PATH"
+      - "$CONFIG_PATH":/config
+      - "$CACHE_PATH":/cache
+      - type: bind
+        source: "$MOVIES_PATH"
+        target: /Movies
+        read_only: true
+      # Optional - extra fonts to be used during transcoding with subtitle burn-in
+#      - type: bind
+#        source: /path/to/fonts
+#        target: /usr/local/share/fonts/custom
+#        read_only: true
+    restart: 'unless-stopped'
+    # Optional - alternative address used for autodiscovery
     environment:
-      # Tell Dockge where to find the stacks
-      - DOCKGE_STACKS_DIR="$STACKS_PATH"" >$DOCKER_CONFIG
-
-mkdir -p $DATA_PATH $STACKS_PATH
+      - JELLYFIN_PublishedServerUrl=http://example.com
+    # Optional - may be necessary for docker healthcheck to pass if running in host network mode
+    extra_hosts:
+      - 'host.docker.internal:host-gateway'">$DOCKER_CONFIG
 }
 
 config()
 {
-usermod -aG docker $USER_NAME
 chown -R $USER_NAME:$GROUP_NAME $ROOT_PATH
-chown -R $USER_NAME:$GROUP_NAME $STACKS_PATH
-chmod 775 $STACKS_PATH
+usermod -aG docker $USER_NAME
 }
 
 #main
@@ -78,5 +88,4 @@ createUser
 install
 config
 echo "the config file is finish. "
-echo "execute passwd" $USER_NAME" modify password"
-echo "then execute docker compose up -d"
+echo "execute docker compose up -d use "$USER_NAME
