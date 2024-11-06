@@ -10,8 +10,8 @@ USER_NAME=dockge
 GROUP_NAME=apps
 ROOT_PATH=/home/$USER_NAME
 DATA_PATH=$ROOT_PATH/data
-STACKS_PATH=/opt/stacks
 DOCKER_CONFIG=$ROOT_PATH/docker-compose.yml
+STACKS_PATH=/opt/stacks
 
 createUser()
 {
@@ -46,7 +46,7 @@ install()
 echo "services:
   dockge:
     image: louislam/dockge:1
-    user: `id -u "$USER_NAME"`:`id -g "$USER_NAME"`
+    user: `id -u "$USER_NAME"`:`id -g "$USER_NAME"|awk '{print "$2"}'`
     restart: unless-stopped
     ports:
       - 127.0.0.1:27881:5001

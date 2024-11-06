@@ -13,6 +13,7 @@ DOCKER_CONFIG=$ROOT_PATH/docker-compose.yml
 DATA_PATH=$ROOT_PATH/data
 CACHE_PATH=$ROOT_PATH/cache
 MUSIC_LIBRARY=/Music
+DOCKGE_STACK=/opt/stacks
 
 createUser()
 {
@@ -61,8 +62,7 @@ echo "services:
     volumes:
       - \"$DATA_PATH:/data\"
       - \"$CACHE_PATH:/cache\"
-      - \"$MUSIC_LIBRARY:/music:ro\"
-" >$DOCKER_CONFIG
+      - \"$MUSIC_LIBRARY:/music:ro\"" >$DOCKER_CONFIG
 
 mkdir -p $DATA_PATH
 mkdir -p $CACHE_PATH
@@ -74,6 +74,14 @@ chown -R $USER_NAME:$GROUP_NAME $ROOT_PATH
 usermod -aG docker $USER_NAME
 }
 
+dockge()
+{
+mkdir -p $DOCKGE_STACK/$USER_NAME
+mv $DOCKER_CONFIG $DOCKGE_STACK/$USER_NAME
+chown -R $USER_NAME:$GROUP_NAME $DOCKGE_STACK/$USER_NAME
+chmod -R 775 $DOCKGE_STACK/$USER_NAME
+}
+
 #main
 if [ ! -d $MUSIC_LIBRARY ]
 then
@@ -83,6 +91,7 @@ fi
 createUser
 install
 config
+dockge
 echo "the config file is finish. "
 echo "execute passwd" $USER_NAME" modify password"
 echo "then execute docker compose up -d"
