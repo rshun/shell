@@ -6,13 +6,20 @@
 #
 # 
 #############################################################################
+#system config
 USER_NAME=calib
 GROUP_NAME=apps
 ROOT_PATH=/home/$USER_NAME
 DOCKER_CONFIG=$ROOT_PATH/docker-compose.yml
+
+#app config
 CONFIG_PATH=$ROOT_PATH/config
 TEMP_PATH=$ROOT_PATH/tmp
+
+#self path
 BOOKS_PATH=$ROOT_PATH/books
+
+#dockge path
 DOCKGE_STACK=/opt/stacks
 
 createUser()
@@ -67,8 +74,6 @@ echo "services:
 
 config()
 {
-#wget -P $CONFIG_PATH https://github.com/janeczku/calibre-web/raw/master/library/metadata.db
-
 chown -R $USER_NAME:$GROUP_NAME $ROOT_PATH
 usermod -aG docker $USER_NAME
 }
@@ -87,5 +92,5 @@ install
 config
 dockge
 echo "the config file is finish. "
-echo "execute passwd" $USER_NAME" modify password"
+echo "cd "$DOCKGE_STACK"/"$USER_NAME
 echo "then execute docker compose up -d"

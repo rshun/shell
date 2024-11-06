@@ -94,7 +94,17 @@ chown -R $USER_NAME:$GROUP_NAME $DOCKGE_STACK/$USER_NAME
 chmod -R 775 $DOCKGE_STACK/$USER_NAME
 }
 
+check()
+{
+if [ ! -d $MOVIES_PATH ]
+then
+    echo $MOVIES_PATH" is not exist."
+    exit -1
+fi
+}
+
 #main
+check
 createUser
 install
 config
