@@ -6,13 +6,20 @@
 #
 # 
 #############################################################################
+#system config
 USER_NAME=navid
 GROUP_NAME=apps
 ROOT_PATH=/home/$USER_NAME
 DOCKER_CONFIG=$ROOT_PATH/docker-compose.yml
+
+#app config
 DATA_PATH=$ROOT_PATH/data
 CACHE_PATH=$ROOT_PATH/cache
+
+#self path
 MUSIC_LIBRARY=/Music
+
+#dockge path
 DOCKGE_STACK=/opt/stacks
 
 createUser()
@@ -50,7 +57,7 @@ echo "services:
     image: deluan/navidrome:latest
     user: `id -u "$USER_NAME"`:`id -g "$USER_NAME"` # should be owner of volumes
     ports:
-      - \"127.0.0.1:4533:4533\"
+      - \"127.0.0.1:15121:4533\"
     restart: unless-stopped
     environment:
       ND_BASEURL: \"/music\"
@@ -85,7 +92,8 @@ chmod -R 775 $DOCKGE_STACK/$USER_NAME
 #main
 if [ ! -d $MUSIC_LIBRARY ]
 then
-    mkdir -p $MUSIC_LIBRARY
+    echo $MUSIC_LIBRARY" is not exist"
+    exit -1
 fi
 
 createUser

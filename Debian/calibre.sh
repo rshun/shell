@@ -61,6 +61,7 @@ echo "services:
       - PUID=`id -u "$USER_NAME"`
       - PGID=`id -g "$USER_NAME"`
       - TZ=Asia/Shanghai
+      - URL_PREFIX=/calibre
       - DOCKER_MODS=lscr.io/linuxserver/mods:universal-calibre-v7.16.0
     volumes:
       - "$CONFIG_PATH":/config
@@ -68,7 +69,7 @@ echo "services:
       - "$BOOKS_PATH":/calibre-library
       #- /path/to/your/gmail/credentials.json:/app/calibre-web/gmail.json #Optional
     ports:
-      - 127.0.0.1:8084:8083 # Change the first number to change the port you want to access the Web UI, not the second
+      - 127.0.0.1:15120:8083 # Change the first number to change the port you want to access the Web UI, not the second
     restart: unless-stopped">$DOCKER_CONFIG
 }
 

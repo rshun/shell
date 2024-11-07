@@ -6,12 +6,18 @@
 #
 # 
 #############################################################################
-USER_NAME=dockge
+#system config
+USER_NAME=dockg
 GROUP_NAME=apps
 ROOT_PATH=/home/$USER_NAME
+
+#app config
 DATA_PATH=$ROOT_PATH/data
 DOCKER_CONFIG=$ROOT_PATH/docker-compose.yml
 STACKS_PATH=/opt/stacks
+
+#other config
+GROUP_ID=`cat /etc/group|grep docker|awk -F':' '{print $3}'`
 
 createUser()
 {
@@ -46,7 +52,7 @@ install()
 echo "services:
   dockge:
     image: louislam/dockge:1
-    user: `id -u "$USER_NAME"`:`id -G "$USER_NAME"|awk '{print $2}'`
+    user: `id -u "$USER_NAME"`:"$GROUP_ID"
     restart: unless-stopped
     ports:
       - 127.0.0.1:27881:5001
@@ -59,6 +65,7 @@ echo "services:
       # ⚠️ 2. Left Stacks Path === Right Stacks Path (MUST)
       - "$STACKS_PATH":"$STACKS_PATH"
     environment:
+      - URL_PREFIX=/dockge
       # Tell Dockge where to find the stacks
       - DOCKGE_STACKS_DIR="$STACKS_PATH"" >$DOCKER_CONFIG
 
