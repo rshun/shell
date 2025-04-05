@@ -10,7 +10,8 @@
 USER_NAME=navid
 GROUP_NAME=apps
 ROOT_PATH=/home/$USER_NAME
-DOCKER_CONFIG=$ROOT_PATH/docker-compose.yml
+DOCKER_CONFIG=docker-compose.yml
+DOCKGE_PATH=/opt/stacks
 
 #app config
 DATA_PATH=$ROOT_PATH/data
@@ -19,9 +20,34 @@ CACHE_PATH=$ROOT_PATH/cache
 #self path
 MUSIC_LIBRARY=/Music
 
-#shell
-CREATE_USER=addusr.sh
-INSTALL_DOCKGE=instdockge.sh
+
+createUser()
+{
+appgroup=`cat /etc/group|grep $GROUP_NAME|wc -l`
+if [ $appgroup -eq 0 ]
+then
+    groupadd $GROUP_NAME
+fi
+
+num=`cat /etc/passwd|grep "$USER_NAME"|wc -l`
+if [ $num -eq 0 ]
+then
+    if [ ! -f addusr.sh ]
+    then
+        wget https://raw.githubusercontent.com/rshun/shell/master/Debian/addusr.sh && chmod +x addusr.sh
+    fi
+
+    if [ ! -f addusr.sh ]
+    then
+        echo "addusr.sh is not exist"
+        exit -1
+    fi
+
+    ./addusr.sh $USER_NAME $GROUP_NAME
+    usermod -L $USER_NAME
+    rm addusr.sh
+fi
+}
 
 docker_yml()
 {
@@ -30,7 +56,7 @@ echo "services:
     image: deluan/navidrome:latest
     user: `id -u "$USER_NAME"`:`id -g "$USER_NAME"` # should be owner of volumes
     ports:
-      - \"127.0.0.1:15121:4533\"
+      - 15121:4533
     restart: unless-stopped
     environment:
       ND_BASEURL: \"/music\"
@@ -42,7 +68,7 @@ echo "services:
     volumes:
       - \"$DATA_PATH:/data\"
       - \"$CACHE_PATH:/cache\"
-      - \"$MUSIC_LIBRARY:/music:ro\"" >$DOCKER_CONFIG
+      - \"$MUSIC_LIBRARY:/music:ro\"" >$ROOT_PATH/$DOCKER_CONFIG
 }
 
 config_app()
@@ -53,6 +79,7 @@ mkdir -p $CACHE_PATH
 chown -R $USER_NAME:$GROUP_NAME $ROOT_PATH
 usermod -aG docker $USER_NAME
 usermod -L $USER_NAME
+
 }
 
 check()
@@ -62,26 +89,24 @@ then
     echo $MUSIC_LIBRARY" is not exist"
     exit -1
 fi
+}
 
-if [ ! -f $CREATE_USER ]
+config_dockge()
+{
+if [ -d $DOCKGE_PATH ]
 then
-    echo $CREATE_USER" is not exist"
-    exit -1
-fi
-
-if [ ! -f $INSTALL_DOCKGE ]
-then
-    echo $INSTALL_DOCKGE" is not exist"
-    exit -1
+    mkdir -p $DOCKGE_PATH/$USER_NAME
+    mv $ROOT_PATH/$DOCKER_CONFIG $DOCKGE_PATH/$USER_NAME
+    chown -R $USER_NAME:$GROUP_NAME  $DOCKGE_PATH/$USER_NAME
 fi
 }
 
 #main
 check
-source $CREATE_USER $USER_NAME $GROUP_NAME
+createUser
 docker_yml
 config_app
-source $INSTALL_DOCKGE $USER_NAME $GROUP_NAME $DOCKER_CONFIG
+config_dockge
 
 echo "config file is success. "
 echo "then execute docker compose up -d"
