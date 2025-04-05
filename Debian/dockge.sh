@@ -78,7 +78,8 @@ config()
 usermod -aG docker $USER_NAME
 chown -R $USER_NAME:$GROUP_NAME $ROOT_PATH
 chown -R $USER_NAME:$GROUP_NAME $STACKS_PATH
-chmod 775 $STACKS_PATH
+chown -R $USER_NAME:$GROUP_NAME $DOCKGE_PATH
+chmod 775 $STACKS_PATH $DOCKGE_PATH
 }
 
 #main
