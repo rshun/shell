@@ -50,13 +50,15 @@ fi
 
 install()
 {
+mkdir -p $DATA_PATH $STACKS_PATH $DOCKGE_PATH
+
 echo "services:
   dockge:
     image: louislam/dockge:1
     user: `id -u "$USER_NAME"`:"$GROUP_ID"
     restart: unless-stopped
     ports:
-      - 127.0.0.1:27881:5001
+      - 15001:5001
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock
       - "$DATA_PATH":/app/data
@@ -69,8 +71,6 @@ echo "services:
       - URL_PREFIX=/dockge
       # Tell Dockge where to find the stacks
       - DOCKGE_STACKS_DIR="$STACKS_PATH"" >$DOCKER_CONFIG
-
-mkdir -p $DATA_PATH $STACKS_PATH
 }
 
 config()
