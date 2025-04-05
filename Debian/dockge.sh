@@ -7,14 +7,15 @@
 # 
 #############################################################################
 #system config
-USER_NAME=dockg
+USER_NAME=dockge
 GROUP_NAME=apps
 ROOT_PATH=/home/$USER_NAME
 
 #app config
 DATA_PATH=$ROOT_PATH/data
-DOCKER_CONFIG=$ROOT_PATH/docker-compose.yml
 STACKS_PATH=/opt/stacks
+DOCKGE_PATH=/opt/dockge
+DOCKER_CONFIG=$DOCKGE_PATH/docker-compose.yml
 
 #other config
 GROUP_ID=`cat /etc/group|grep docker|awk -F':' '{print $3}'`
@@ -81,6 +82,12 @@ chmod 775 $STACKS_PATH
 }
 
 #main
+if [ -z $GROUP_ID ]
+then
+    echo "docker group is not exist."
+    exit -1
+fi
+
 createUser
 install
 config

@@ -12,6 +12,16 @@
 #
 #
 ########################################################
+#root
+BAK_CRON=root_cron
+BAK_HTML=root_html
+PORT=39281
+
+#user
+USER_NAME=rshun
+USER_HOME_DIR=/home/rshun
+USER_SHELL=$USER_NAME".sh"
+
 install()
 {
     apt update
@@ -28,52 +38,34 @@ download()
 }
 
 
-execute_user()
+post_user()
 {
-username=`cat /etc/passwd|grep rshun|wc -l`
+username=`cat /etc/passwd|grep $USER_NAME|wc -l`
 if [ $username -eq 1 ]
 then
-    usermod -G docker rshun
+    usermod -G docker $USER_NAME
 fi
 
 echo "
-cd /home/rshun
+cd "$USER_HOME_DIR"
 mkdir -p backup bin csv data etc html lib shell src obj tmp src/py src/tmp
-cd /home/rshun
+cd "$USER_HOME_DIR/src"
 git clone git@github.com:rshun/shuncs.git
 git clone git@github.com:rshun/stock.git
 git clone git@github.com:rshun/keyMaster.git
 git clone git@github.com:rshun/rules.git
 
-" >>/home/rshun/rshun.sh
+" >>$USER_HOME_DIR/$USER_SHELL
 
-chmod 777 /home/rshun/rshun.sh
-su - rshun -c "sh /home/rshun/rshun.sh"
-su - rshun -c "rm /home/rshun/rshun.sh"
-
-echo "
-alias l='ls -ltr'
-set -o vi
-export EDITOR=vi
-export PATH=$PATH:$HOME/bin:$HOME/shell
-" >> /home/rshun/.profile
+chmod 777 $USER_HOME_DIR/$USER_SHELL
+su - $USER_NAME -c "sh "$USER_HOME_DIR"/"$USER_SHELL""
+su - $USER_NAME -c "rm "$USER_HOME_DIR"/"$USER_SHELL""
 }
 
-enable_firewall()
+config_root()
 {
-    ufw enable
-    ufw allow 39281/tcp
-    ufw reload
-}
 
-#main
-if [ $# -eq 1 ]
-then
-    port=$1
-else
-    port=39281
-fi
-
+cd $HOME
 echo "
 alias l='ls -ltr'
 set -o vi
@@ -81,13 +73,52 @@ export EDITOR=vi
 export PATH=$PATH:$HOME/shell
 " >>$HOME/.profile
 
-mkdir shell tmp
-cd tmp
+mkdir tmp
+BAK_CRON_FILE=$BAK_CRON"."$DAY
+BAK_HTML_FILE=$BAK_HTML"."$DAY".tar.gz"
+
+if [ ! -f $BAK_CRON_FILE ]
+then
+    echo $BAK_CRON_FILE" is not exist."
+    exit -1
+else
+    crontab -u root $BAK_CRON_FILE
+fi
+
+if [ ! -f $BAK_HTML_FILE ]
+then
+    echo $BAK_HTML_FILE" is not exist."
+    exit -1
+else
+    tar zxvf $BAK_HTML_FILE
+fi
+
+
+}
+
+enable_firewall()
+{
+    ufw enable
+    ufw allow $PORT/tcp
+    ufw reload
+}
+
+#main
+if [ $# -eq 1 ]
+then
+    DAY=$1
+else
+    echo "usage: $0 YYYYMMMDD(backup file)"
+    exit -1
+fi
+
+config_root $DAY
+cd $HOME/tmp
 install
-download sshd.sh $port
+download sshd.sh $PORT
 download instdocker.sh
-download addusr.sh rshun
-execute_user
+download addusr.sh $USER_NAME
+post_user
 
 enable_firewall
 timedatectl set-timezone Asia/Shanghai

@@ -19,38 +19,11 @@ CACHE_PATH=$ROOT_PATH/cache
 #self path
 MUSIC_LIBRARY=/Music
 
-#dockge path
-DOCKGE_STACK=/opt/stacks
+#shell
+CREATE_USER=addusr.sh
+INSTALL_DOCKGE=instdockge.sh
 
-createUser()
-{
-appgroup=`cat /etc/group|grep $GROUP_NAME|wc -l`
-if [ $appgroup -eq 0 ]
-then
-    groupadd $GROUP_NAME
-fi
-
-num=`cat /etc/passwd|grep "$USER_NAME"|wc -l`
-if [ $num -eq 0 ]
-then
-    if [ ! -f addusr.sh ]
-    then
-        wget https://raw.githubusercontent.com/rshun/shell/master/Debian/addusr.sh && chmod +x addusr.sh
-    fi
-
-    if [ ! -f addusr.sh ]
-    then
-        echo "addusr.sh is not exist"
-        exit -1
-    fi
-
-    ./addusr.sh $USER_NAME $GROUP_NAME
-    usermod -L $USER_NAME
-    rm addusr.sh
-fi
-}
-
-install()
+docker_yml()
 {
 echo "services:
   navidrome:
@@ -70,36 +43,45 @@ echo "services:
       - \"$DATA_PATH:/data\"
       - \"$CACHE_PATH:/cache\"
       - \"$MUSIC_LIBRARY:/music:ro\"" >$DOCKER_CONFIG
+}
 
+config_app()
+{
 mkdir -p $DATA_PATH
 mkdir -p $CACHE_PATH
-}
 
-config()
-{
 chown -R $USER_NAME:$GROUP_NAME $ROOT_PATH
 usermod -aG docker $USER_NAME
+usermod -L $USER_NAME
 }
 
-dockge()
+check()
 {
-mkdir -p $DOCKGE_STACK/$USER_NAME
-mv $DOCKER_CONFIG $DOCKGE_STACK/$USER_NAME
-chown -R $USER_NAME:$GROUP_NAME $DOCKGE_STACK/$USER_NAME
-chmod -R 775 $DOCKGE_STACK/$USER_NAME
-}
-
-#main
 if [ ! -d $MUSIC_LIBRARY ]
 then
     echo $MUSIC_LIBRARY" is not exist"
     exit -1
 fi
 
-createUser
-install
-config
-dockge
-echo "the config file is finish. "
-echo "execute passwd" $USER_NAME" modify password"
+if [ ! -f $CREATE_USER ]
+then
+    echo $CREATE_USER" is not exist"
+    exit -1
+fi
+
+if [ ! -f $INSTALL_DOCKGE ]
+then
+    echo $INSTALL_DOCKGE" is not exist"
+    exit -1
+fi
+}
+
+#main
+check
+source $CREATE_USER $USER_NAME $GROUP_NAME
+docker_yml
+config_app
+source $INSTALL_DOCKGE $USER_NAME $GROUP_NAME $DOCKER_CONFIG
+
+echo "config file is success. "
 echo "then execute docker compose up -d"
