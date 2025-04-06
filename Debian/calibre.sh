@@ -15,6 +15,7 @@ DOCKER_CONFIG=$ROOT_PATH/docker-compose.yml
 #app config
 CONFIG_PATH=$ROOT_PATH/config
 TEMP_PATH=$ROOT_PATH/tmp
+CADDY_FILE=/etc/caddy/Caddyfile
 PORT=15122
 
 #self path
@@ -97,6 +98,7 @@ then
 }" >>$CADDY_FILE
 systemctl reload caddy
 fi
+}
 
 #main
 createUser

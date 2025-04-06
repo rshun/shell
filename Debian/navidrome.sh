@@ -16,6 +16,7 @@ DOCKGE_PATH=/opt/stacks
 #app config
 DATA_PATH=$ROOT_PATH/data
 CACHE_PATH=$ROOT_PATH/cache
+CADDY_FILE=/etc/caddy/Caddyfile
 PORT=15121
 
 #self path
@@ -110,6 +111,7 @@ then
 }" >>$CADDY_FILE
 systemctl reload caddy
 fi
+}
 
 #main
 check
