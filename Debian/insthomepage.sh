@@ -15,6 +15,7 @@ DOCKGE_PATH=/opt/stacks
 
 #app config
 CONFIG_PATH=$ROOT_PATH/config
+CADDY_FILE=/etc/caddy/Caddyfile
 PORT=15120
 
 createUser()
@@ -47,7 +48,7 @@ fi
 
 docker_yml()
 {
-echo"services:
+echo "services:
   homepage:
     image: ghcr.io/gethomepage/homepage:latest
     container_name: homepage
@@ -57,7 +58,7 @@ echo"services:
       - "$CONFIG_PATH":/app/config # Make sure your local config directory exists
       - /var/run/docker.sock:/var/run/docker.sock # (optional) For docker integrations, see alternative methods
     environment:
-      HOMEPAGE_ALLOWED_HOSTS: 127.0.0.1:"$PORT" # required, may need port. See gethomepage.dev/installation/#homepage_allowed_hosts
+      HOMEPAGE_ALLOWED_HOSTS: homepage.local # required, may need port. See gethomepage.dev/installation/#homepage_allowed_hosts
       PUID: `id -u "$USER_NAME"`
       PGID: `id -g "$USER_NAME"`
 ">$ROOT_PATH/$DOCKER_CONFIG
@@ -85,14 +86,15 @@ fi
 
 config_caddy()
 {
-if [ -f /etc/caddy/Caddyfile ]
+if [ -f $CADDY_FILE ]
 then
-    echo "http://navid.local {
+    echo "http://homepage.local {
         reverse_proxy 127.0.0.1:"$PORT"
 }
 " >>$CADDY_FILE
 systemctl reload caddy
 fi
+}
 
 #main
 createUser
