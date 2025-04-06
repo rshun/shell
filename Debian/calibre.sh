@@ -3,7 +3,7 @@
 #
 # 1. make default docker-compose.yml
 # 2. make sure you have docker pull environment.
-#
+# 3. use domain name if caddy install 
 # 
 #############################################################################
 #system config
@@ -15,6 +15,7 @@ DOCKER_CONFIG=$ROOT_PATH/docker-compose.yml
 #app config
 CONFIG_PATH=$ROOT_PATH/config
 TEMP_PATH=$ROOT_PATH/tmp
+PORT=15122
 
 #self path
 BOOKS_PATH=$ROOT_PATH/books
@@ -69,7 +70,7 @@ echo "services:
       - "$BOOKS_PATH":/calibre-library
       #- /path/to/your/gmail/credentials.json:/app/calibre-web/gmail.json #Optional
     ports:
-      - 127.0.0.1:15120:8083 # Change the first number to change the port you want to access the Web UI, not the second
+      - "$PORT":8083 # Change the first number to change the port you want to access the Web UI, not the second
     restart: unless-stopped">$DOCKER_CONFIG
 }
 
@@ -87,11 +88,22 @@ chown -R $USER_NAME:$GROUP_NAME $DOCKGE_STACK/$USER_NAME
 chmod -R 775 $DOCKGE_STACK/$USER_NAME
 }
 
+config_caddy()
+{
+if [ -f /etc/caddy/Caddyfile ]
+then
+    echo "http://books.local {
+        reverse_proxy 127.0.0.1:"$PORT"
+}" >>$CADDY_FILE
+systemctl reload caddy
+fi
+
 #main
 createUser
 install
 config
 dockge
+config_caddy
 echo "the config file is finish. "
 echo "cd "$DOCKGE_STACK"/"$USER_NAME
 echo "then execute docker compose up -d"

@@ -15,8 +15,8 @@ INTERFACE=$(ip route get 1 | awk '{print $5; exit}')
 # 获取本机IP和CIDR（如 192.168.1.129/24）
 IP_CIDR=$(ip -o -f inet addr show $INTERFACE | awk '{print $4}')
 
-# 计算局域网网段（如 192.168.1.0/24）
-LAN_SUBNET=$(echo $IP_CIDR | awk -F '.' '{print $1"."$2"."$3".0"}' | cut -d'/' -f1)/$(echo $IP_CIDR | cut -d'/' -f2)
+# 计算局域网网段（如 192.168.1.0/25）
+LAN_SUBNET=$(echo $IP_CIDR | awk -F '.' '{print $1"."$2"."$3".0"}' | cut -d'/' -f1)/25
 }
 
 openfilewall()

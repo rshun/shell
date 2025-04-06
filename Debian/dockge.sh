@@ -17,7 +17,7 @@ STACKS_PATH=/opt/stacks
 DOCKGE_PATH=/opt/dockge
 DOCKER_CONFIG=$DOCKGE_PATH/docker-compose.yml
 CADDY_FILE=/etc/caddy/Caddyfile
-PORT=127.0.0.1:15001
+PORT=15001
 
 #other config
 GROUP_ID=`cat /etc/group|grep docker|awk -F':' '{print $3}'`
@@ -89,8 +89,9 @@ config_caddy()
 if [ -f /etc/caddy/Caddyfile ]
 then
     echo "http://dockge.local {
-        reverse_proxy "$PORT"
-    }" >>$CADDY_FILE
+        reverse_proxy 127.0.0.1:"$PORT"
+}" >>$CADDY_FILE
+systemctl reload caddy
 fi
 
 }

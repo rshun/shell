@@ -7,19 +7,15 @@
 # 
 #############################################################################
 #system config
-USER_NAME=navid
+USER_NAME=pages
 GROUP_NAME=apps
 ROOT_PATH=/home/$USER_NAME
 DOCKER_CONFIG=docker-compose.yml
 DOCKGE_PATH=/opt/stacks
 
 #app config
-DATA_PATH=$ROOT_PATH/data
-CACHE_PATH=$ROOT_PATH/cache
-PORT=15121
-
-#self path
-MUSIC_LIBRARY=/Music
+CONFIG_PATH=$ROOT_PATH/config
+PORT=15120
 
 createUser()
 {
@@ -51,44 +47,30 @@ fi
 
 docker_yml()
 {
-echo "services:
-  navidrome:
-    image: deluan/navidrome:latest
-    user: `id -u "$USER_NAME"`:`id -g "$USER_NAME"` # should be owner of volumes
+echo"services:
+  homepage:
+    image: ghcr.io/gethomepage/homepage:latest
+    container_name: homepage
     ports:
-      - "$PORT":4533
-    restart: unless-stopped
-    environment:
-      ND_BASEURL: \"/music\"
-      ND_DEFAULTLANGUAGE: \"zh-Hans\"
-      ND_DEFAULTTHEME: \"Auto\"
-      ND_LOGLEVEL: info
-      ND_SCANSCHEDULE: 1h
-      ND_SESSIONTIMEOUT: 24h
+      - "$PORT":3000
     volumes:
-      - \"$DATA_PATH:/data\"
-      - \"$CACHE_PATH:/cache\"
-      - \"$MUSIC_LIBRARY:/music:ro\"" >$ROOT_PATH/$DOCKER_CONFIG
+      - "$CONFIG_PATH":/app/config # Make sure your local config directory exists
+      - /var/run/docker.sock:/var/run/docker.sock # (optional) For docker integrations, see alternative methods
+    environment:
+      HOMEPAGE_ALLOWED_HOSTS: 127.0.0.1:"$PORT" # required, may need port. See gethomepage.dev/installation/#homepage_allowed_hosts
+      PUID: `id -u "$USER_NAME"`
+      PGID: `id -g "$USER_NAME"`
+">$ROOT_PATH/$DOCKER_CONFIG
 }
 
 config_app()
 {
-mkdir -p $DATA_PATH
-mkdir -p $CACHE_PATH
+mkdir -p $CONFIG_PATH
 
 chown -R $USER_NAME:$GROUP_NAME $ROOT_PATH
 usermod -aG docker $USER_NAME
 usermod -L $USER_NAME
 
-}
-
-check()
-{
-if [ ! -d $MUSIC_LIBRARY ]
-then
-    echo $MUSIC_LIBRARY" is not exist"
-    exit -1
-fi
 }
 
 config_dockge()
@@ -107,12 +89,12 @@ if [ -f /etc/caddy/Caddyfile ]
 then
     echo "http://navid.local {
         reverse_proxy 127.0.0.1:"$PORT"
-}" >>$CADDY_FILE
+}
+" >>$CADDY_FILE
 systemctl reload caddy
 fi
 
 #main
-check
 createUser
 docker_yml
 config_app
