@@ -91,7 +91,7 @@ chmod -R 775 $DOCKGE_STACK/$USER_NAME
 
 config_caddy()
 {
-if [ -f /etc/caddy/Caddyfile ]
+if [ -f $CADDY_FILE ]
 then
     echo "http://books.local {
         reverse_proxy 127.0.0.1:"$PORT"

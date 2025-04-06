@@ -104,7 +104,7 @@ fi
 
 config_caddy()
 {
-if [ -f /etc/caddy/Caddyfile ]
+if [ -f $CADDY_FILE ]
 then
     echo "http://navid.local {
         reverse_proxy 127.0.0.1:"$PORT"
