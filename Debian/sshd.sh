@@ -1,3 +1,10 @@
+#!/bin/bash
+#############################################################################
+#
+# 1. modify ssh default port
+#
+# 
+#############################################################################
 config_file="/etc/ssh/sshd_config"
 
 cp $config_file $config_file".bak"
@@ -11,8 +18,8 @@ sed -i 's/^#PasswordAuthentication/PasswordAuthentication/g' "$config_file"
 
 if [ $# -eq 0 ]
 then
-    sshPort=39281
-
+    echo -n "input port:"
+    read sshPort
 else
     sshPort=$1
 fi

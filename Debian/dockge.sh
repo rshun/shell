@@ -3,7 +3,7 @@
 #
 # 1. make default docker-compose.yml
 # 2. make sure you have docker pull environment.
-#
+# 3. use domain name if caddy install 
 # 
 #############################################################################
 #system config
@@ -16,6 +16,8 @@ DATA_PATH=$ROOT_PATH/data
 STACKS_PATH=/opt/stacks
 DOCKGE_PATH=/opt/dockge
 DOCKER_CONFIG=$DOCKGE_PATH/docker-compose.yml
+CADDY_FILE=/etc/caddy/Caddyfile
+PORT=127.0.0.1:15001
 
 #other config
 GROUP_ID=`cat /etc/group|grep docker|awk -F':' '{print $3}'`
@@ -58,7 +60,7 @@ echo "services:
     user: `id -u "$USER_NAME"`:"$GROUP_ID"
     restart: unless-stopped
     ports:
-      - 15001:5001
+      - "$PORT":5001
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock
       - "$DATA_PATH":/app/data
@@ -82,6 +84,16 @@ chown -R $USER_NAME:$GROUP_NAME $DOCKGE_PATH
 chmod 775 $STACKS_PATH $DOCKGE_PATH
 }
 
+config_caddy()
+{
+if [ -f /etc/caddy/Caddyfile ]
+then
+    echo "http://dockge.local {
+        reverse_proxy "$PORT"
+    }" >>$CADDY_FILE
+fi
+
+}
 #main
 if [ -z $GROUP_ID ]
 then
@@ -92,6 +104,7 @@ fi
 createUser
 install
 config
+config_caddy
 echo "the config file is finish. "
 echo "execute passwd" $USER_NAME" modify password"
 echo "then execute docker compose up -d"
