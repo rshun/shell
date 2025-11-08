@@ -26,7 +26,8 @@ else
     if [ $groupnum -eq 0 ]
     then
         echo "the group "$2" is not exist"
-        exit 1
+        echo "now create group"
+        groupadd $2
     fi
     useradd -d /home/$1 -g $2 -s /bin/bash -m $1
 fi

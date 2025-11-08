@@ -2,13 +2,11 @@
 ########################################################
 #
 # 1. 安装常用软件
-# 2. 找到备份文件，根据备份文件前面的用户名创建用户，并将数据解压至该目录下,cron要处理
-# 3. 安装docker
-# 4. 修改sshd，打开防火墙
-# 1. install docker,sqlite3,apps and create user
+# 2. 找到备份文件，根据备份文件前面的用户名创建用户，解压数据
+# 3. 修改sshd，打开防火墙
+# 1. install apps and create user
 # 2. initial user directory
 # 3. enable firewall and open 
-#
 #
 #
 ########################################################
@@ -40,20 +38,17 @@ download()
 
 post_user()
 {
-username=`cat /etc/passwd|grep $USER_NAME|wc -l`
-if [ $username -eq 1 ]
-then
-    usermod -G docker $USER_NAME
-fi
 
 echo "
 cd "$USER_HOME_DIR"
-mkdir -p backup bin csv data etc html lib shell src obj tmp src/py src/tmp
+mkdir -p backup bin csv data etc lib shell src obj tmp src/py
 cd "$USER_HOME_DIR/src"
 git clone git@github.com:rshun/shuncs.git
 git clone git@github.com:rshun/stock.git
 git clone git@github.com:rshun/keyMaster.git
 git clone git@github.com:rshun/rules.git
+git clone git@github.com:rshun/shell.git
+git clone git@github.com:rshun/quant.git
 
 " >>$USER_HOME_DIR/$USER_SHELL
 
@@ -74,25 +69,20 @@ export PATH=$PATH:$HOME/shell
 " >>$HOME/.profile
 
 mkdir tmp
-BAK_CRON_FILE=$BAK_CRON"."$DAY
-BAK_HTML_FILE=$BAK_HTML"."$DAY".tar.gz"
 
+BAK_CRON_FILE=$BAK_CRON"."$DAY
 if [ ! -f $BAK_CRON_FILE ]
 then
     echo $BAK_CRON_FILE" is not exist."
-    exit -1
 else
     crontab -u root $BAK_CRON_FILE
 fi
 
-if [ ! -f $BAK_HTML_FILE ]
-then
-    echo $BAK_HTML_FILE" is not exist."
-    exit -1
-else
-    tar zxvf $BAK_HTML_FILE
-fi
 
+for tarfile in `ls root*.tar.gz`
+do
+    tar zxvf $tarfile
+done
 
 }
 
@@ -116,7 +106,6 @@ config_root $DAY
 cd $HOME/tmp
 install
 download sshd.sh $PORT
-download instdocker.sh
 download addusr.sh $USER_NAME
 post_user
 
