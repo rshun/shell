@@ -17,7 +17,7 @@ lg = bs.login()
 # 详细指标参数，参见“历史行情指标参数”章节；“分钟线”参数与“日线”参数不同。“分钟线”不包含指数。
 # 分钟线指标：date,time,code,open,high,low,close,volume,amount,adjustflag
 # 周月线指标：date,code,open,high,low,close,volume,amount,adjustflag,turn,pctChg
-rs = bs.query_history_k_data_plus(\"sh.600000\",
+rs = bs.query_history_k_data_plus(\"sh.600036\",
     \"date,code,open,high,low,close,preclose,volume,amount,adjustflag,turn,tradestatus,pctChg,isST\",
     start_date=\"2024-07-01\", end_date=\"2024-07-31\",
     frequency=\"d\", adjustflag=\"3\")
@@ -52,4 +52,4 @@ print(stock_sse_summary_df)
 ">$HOME/src/py/helloworld_akshare.py
 
 echo "now run akshare"
-python3 $HOME/src/py/helloworld_baostock.py
+python3 $HOME/src/py/helloworld_akstock.py

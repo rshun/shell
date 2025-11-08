@@ -23,7 +23,7 @@ USER_SHELL=$USER_NAME".sh"
 install()
 {
     apt update
-    apt install build-essential man lsof curl wget ufw sqlite3 libsqlite3-dev python3-pip nginx -y
+    apt install build-essential man lsof curl wget ufw sqlite3 libsqlite3-dev python3-pip python3-venv nginx -y
     if [ $? -ne 0 ]
     then
         exit -1
@@ -39,6 +39,7 @@ download()
 post_user()
 {
 
+#wget -O instPyStock.sh https://raw.githubusercontent.com/rshun/shell/master/Debian/instPyStock.py.sh && chmod +x instPyStock.sh
 echo "
 cd "$USER_HOME_DIR"
 mkdir -p backup bin csv data etc lib shell src obj tmp src/py
@@ -50,6 +51,8 @@ git clone git@github.com:rshun/rules.git
 git clone git@github.com:rshun/shell.git
 git clone git@github.com:rshun/quant.git
 
+cd "$USER_HOME_DIR/src/stock"
+python3 -m venv venv_stock
 " >>$USER_HOME_DIR/$USER_SHELL
 
 chmod 777 $USER_HOME_DIR/$USER_SHELL
@@ -84,12 +87,15 @@ do
     tar zxvf $tarfile
 done
 
+systemctl enable nginx
+ln -s /etc/nginx/sites-available/shuncs.com.conf /etc/nginx/sites-enabled/
 }
 
 enable_firewall()
 {
     ufw enable
     ufw allow $PORT/tcp
+    ufw allow 'Nginx Full'
     ufw reload
 }
 
