@@ -84,11 +84,12 @@ do
     rm -rf $tarfile
 done
 
-for conf in `ls /etc/nginx/sites-available/*`
+cd /etc/nginx/sites-available
+for confile in `ls *`
 do
-    if [ ! -f /etc/nginx/sites-enabled/$conf ]
+    if [ ! -f /etc/nginx/sites-enabled/$confile ]
     then
-        ln -s /etc/nginx/sites-available/$conf /etc/nginx/sites-enabled/
+        ln -s /etc/nginx/sites-available/$confile /etc/nginx/sites-enabled/
     fi
 done
 
@@ -101,7 +102,7 @@ echo "configure root is end.."
 config_user()
 {
 download addusr.sh 
-cd $TMP_FILE
+cd $TMP_PATH
 for tarfile in `ls *.tar.gz`
 do
     username=`echo $tarfile|cut -d'_' -f1`
@@ -110,7 +111,7 @@ do
     then
         echo $username" is not exist"
         read -p "是否创建用户(输入'Y'继续): " choice
-        if [[ "$choice" == "Y" ]]; then
+        if [ "$choice" == "Y" ]; then
             ./addusr.sh $username
         fi
     fi
@@ -118,7 +119,7 @@ do
     rm -rf $tarfile
 done
 
-for cronfile in `ls *_cron.$DAY`
+for cronfile in `ls *cron.$DAY`
 do
     username=`echo $cronfile|cut -d'_' -f1`
     result=`cat /etc/passwd|grep $username|wc -l`
@@ -171,7 +172,7 @@ enable_firewall
 config_root $DAY
 
 config_user
-
+rm -rf $TMP_PATH/addusr.sh
 echo "please execute follow commands after install finish."
 echo "add user password"
 echo "modify root password"
