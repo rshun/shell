@@ -77,22 +77,25 @@ echo "configure root is end.."
 
 config_user()
 {
-download addusr.sh 
 cd $TMP_PATH
+download addusr.sh 
 for tarfile in `ls *.tar.gz`
 do
     username=`echo $tarfile|cut -d'_' -f1`
     result=`cat /etc/passwd|grep $username|wc -l`
     if [ $result -eq 0 ]
     then
-        echo $username" is not exist"
-        read -p "是否创建用户(输入'Y'继续): " choice
-        if [ "$choice" == "Y" ]; then
+        read -p $username"不存在,是否创建用户(输入'Y'继续): " choice
+        if [ "$choice" != "Y" ]; then
+            continue
+        else
             ./addusr.sh $username
         fi
     fi
+
     tar -zxvf $tarfile -C /home/$username
     rm -rf $tarfile
+
 done
 
 for cronfile in `ls *cron.$DAY`
