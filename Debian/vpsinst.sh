@@ -33,30 +33,6 @@ download()
     wget -O $1 https://raw.githubusercontent.com/rshun/shell/master/Debian/$1 && chmod +x $1
 }
 
-
-post_user()
-{
-
-echo "
-cd "$USER_HOME_DIR"
-mkdir -p backup bin csv data etc lib shell src obj tmp src/py
-
-for tarfile in `ls $USER_NAME*.tar.gz`
-do
-    tar zxvf $tarfile
-    rm -rf $tarfile
-done
-
-cd "$USER_HOME_DIR/src"
-wget -O instPyStock.sh https://raw.githubusercontent.com/rshun/shell/master/Debian/instPyStock.sh && chmod +x instPyStock.sh
-
-" >>$USER_HOME_DIR/$USER_SHELL
-
-chmod 777 $USER_HOME_DIR/$USER_SHELL
-su - $USER_NAME -c "sh "$USER_HOME_DIR"/"$USER_SHELL""
-su - $USER_NAME -c "rm "$USER_HOME_DIR"/"$USER_SHELL""
-}
-
 config_root()
 {
 echo "configure root...."
