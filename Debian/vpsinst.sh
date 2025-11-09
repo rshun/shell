@@ -22,7 +22,7 @@ echo "now install apps......"
     if [ $? -ne 0 ]
     then
         echo "apps install error..."
-        exit -1
+        exit 1
     fi
 
 echo "apps install finished..."
@@ -67,12 +67,15 @@ export EDITOR=vi
 export PATH=$PATH:$HOME/shell
 " >>$HOME/.profile
 
+source $HOME/.profile
+
 BAK_CRON_FILE=$TMP_PATH/$BAK_CRON"."$DAY
 if [ ! -f $BAK_CRON_FILE ]
 then
     echo $BAK_CRON_FILE" is not exist."
 else
     crontab -u root $BAK_CRON_FILE
+    rm $BAK_CRON_FILE
 fi
 
 for tarfile in `ls $TMP_PATH/root*.tar.gz`
@@ -81,24 +84,25 @@ do
     rm -rf $tarfile
 done
 
-for conf in `ls /etc/nginx/sites-available/*.conf`
+for conf in `ls /etc/nginx/sites-available/*`
 do
     if [ ! -f /etc/nginx/sites-enabled/$conf ]
-    do
+    then
         ln -s /etc/nginx/sites-available/$conf /etc/nginx/sites-enabled/
-    done
+    fi
 done
 
 systemctl enable nginx
 systemctl start nginx
 
-echo "configure is end.."
+echo "configure root is end.."
 }
 
 config_user()
 {
 download addusr.sh 
-for tarfile in `ls $TMP_PATH/root*.tar.gz`
+cd $TMP_FILE
+for tarfile in `ls *.tar.gz`
 do
     username=`echo $tarfile|cut -d'_' -f1`
     result=`cat /etc/passwd|grep $username|wc -l`
@@ -107,11 +111,22 @@ do
         echo $username" is not exist"
         read -p "是否创建用户(输入'Y'继续): " choice
         if [[ "$choice" == "Y" ]]; then
-            addusr.sh $username
+            ./addusr.sh $username
         fi
     fi
-    tar -zxvf $tarfile -C $HOME/$username
+    tar -zxvf $tarfile -C /home/$username
     rm -rf $tarfile
+done
+
+for cronfile in `ls *_cron.$DAY`
+do
+    username=`echo $cronfile|cut -d'_' -f1`
+    result=`cat /etc/passwd|grep $username|wc -l`
+    if [ $result -eq 1 ]
+    then
+        crontab -u $username $cronfile
+        rm -rf $cronfile
+    fi
 done
 }
 
@@ -135,16 +150,19 @@ echo "configure sshd is finished...."
 }
 
 #main
-[ if $# -lt 2 ]
+if [ $# -lt 2 ]
 then
     echo "usage: $0 YYYYMMMDD(backup file) PORT"
-    exit -1
+    exit 1
 fi
 
 DAY=$1
 PORT=$2
 
-mkdir -p $TMP_PATH
+if [ ! -d $TMP_PATH ]
+then 
+    mkdir -p $TMP_PATH
+fi
 timedatectl set-timezone Asia/Shanghai
 install
 
@@ -153,7 +171,6 @@ enable_firewall
 config_root $DAY
 
 config_user
-
 
 echo "please execute follow commands after install finish."
 echo "add user password"
