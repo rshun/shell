@@ -3,7 +3,7 @@ VENV_DIRPATH=$HOME/src/venv
 
 installvenv()
 {
-if [ -d $VENV_DIRPATH ];
+if [ ! -d $VENV_DIRPATH ];
 then
     mkdir -p $VENV_DIRPATH
 fi 
@@ -48,8 +48,11 @@ akshare_demo()
 echo "
 import akshare as ak
 
-stock_sse_summary_df = ak.stock_sse_summary()
-print(stock_sse_summary_df)
+begin_date=\"20251001\"
+end_date=\"20251031\"
+stock_list = ak.stock_zh_a_hist(symbol=\"600036\", period=\"daily\", start_date=begin_date, end_date=end_date, adjust=\"\",timeout=5)
+print(stock_list)
+
 ">$HOME/src/py/helloworld_akshare.py
 }
 
