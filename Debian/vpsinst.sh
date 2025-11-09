@@ -23,7 +23,7 @@ USER_SHELL=$USER_NAME".sh"
 install()
 {
     apt update
-    apt install build-essential man lsof curl wget ufw sqlite3 libsqlite3-dev python3-pip python3-venv nginx -y
+    apt install build-essential man lsof curl wget ufw sqlite3 libsqlite3-dev python3-pip python3-venv nginx git -y
     if [ $? -ne 0 ]
     then
         exit -1
@@ -39,20 +39,25 @@ download()
 post_user()
 {
 
-#wget -O instPyStock.sh https://raw.githubusercontent.com/rshun/shell/master/Debian/instPyStock.py.sh && chmod +x instPyStock.sh
 echo "
 cd "$USER_HOME_DIR"
 mkdir -p backup bin csv data etc lib shell src obj tmp src/py
+
+for tarfile in `ls $USER_NAME*.tar.gz`
+do
+    tar zxvf $tarfile
+    rm -rf $tarfile
+done
+
 cd "$USER_HOME_DIR/src"
+wget -O instPyStock.sh https://raw.githubusercontent.com/rshun/shell/master/Debian/instPyStock.sh && chmod +x instPyStock.sh
+
 git clone git@github.com:rshun/shuncs.git
 git clone git@github.com:rshun/stock.git
 git clone git@github.com:rshun/keyMaster.git
 git clone git@github.com:rshun/rules.git
 git clone git@github.com:rshun/shell.git
 git clone git@github.com:rshun/quant.git
-
-cd "$USER_HOME_DIR/src/stock"
-python3 -m venv venv_stock
 " >>$USER_HOME_DIR/$USER_SHELL
 
 chmod 777 $USER_HOME_DIR/$USER_SHELL
@@ -81,14 +86,18 @@ else
     crontab -u root $BAK_CRON_FILE
 fi
 
-
 for tarfile in `ls root*.tar.gz`
 do
     tar zxvf $tarfile
+    rm -rf $tarfile
 done
 
+if [ -f /etc/nginx/sites-available/shuncs.com.conf ]
+then
+    ln -s /etc/nginx/sites-available/shuncs.com.conf /etc/nginx/sites-enabled/
+fi
 systemctl enable nginx
-ln -s /etc/nginx/sites-available/shuncs.com.conf /etc/nginx/sites-enabled/
+systemctl start nginx
 }
 
 enable_firewall()
@@ -108,15 +117,24 @@ else
     exit -1
 fi
 
-config_root $DAY
-cd $HOME/tmp
+timedatectl set-timezone Asia/Shanghai
+echo "now install apps......"
 install
+echo "apps install finished..."
+
+echo "open firewall...."
+enable_firewall
+echo "firewall is opened"
+
+echo "configure root...."
+config_root $DAY
+echo "configure is end.."
+
+cd $HOME/tmp
 download sshd.sh $PORT
 download addusr.sh $USER_NAME
 post_user
 
-enable_firewall
-timedatectl set-timezone Asia/Shanghai
 echo "please execute follow commands after install finish."
 echo "add user password"
 echo "modify root password"
