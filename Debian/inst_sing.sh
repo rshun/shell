@@ -61,6 +61,7 @@ install_deps() {
   ufw allow 31052/tcp >/dev/null 2>&1 || true
   ufw allow 31052/udp >/dev/null 2>&1 || true
   ufw allow 20811/udp >/dev/null 2>&1 || true
+  echo "y" | ufw enable
 
   if ufw status 2>/dev/null | grep -q "Status: active"; then
     ufw reload
