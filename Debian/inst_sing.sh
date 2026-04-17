@@ -169,11 +169,6 @@ install_singbox() {
 }
 EOF
 
-  green "sing-box 配置文件已生成：${CONFIG_FILE}"
-  yellow "请保存以下客户端信息："
-  echo "  Hysteria2 用户名: ${USERNAME}"
-  echo "  Hysteria2 密码: ${PASSWORD}"
-  echo "  VMess UUID: ${UUID}"
 }
 
 install_acme() {
@@ -294,6 +289,12 @@ main() {
   echo "私钥文件: ${CERT_DIR}/${DOMAIN}.key"
   echo "配置文件: ${CONFIG_FILE}"
   echo "service 文件: ${SERVICE_FILE}"
+  
+  green "sing-box 配置文件已生成：${CONFIG_FILE}"
+  yellow "请保存以下客户端信息："
+  echo "  Hysteria2 用户名: ${USERNAME}"
+  echo "  Hysteria2 密码: ${PASSWORD}"
+  echo "  VMess UUID: ${UUID}"
 }
 
 main "$@"
